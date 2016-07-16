@@ -1,3 +1,5 @@
+"use strict";
+
 const ack = require('ack-node')
 
 var jade = require('jade')
@@ -60,16 +62,24 @@ function createMonitor(monitor, outPath, searchOps) {
 }
 
 /**
+  f - file to write
+  outPath - folder to write to
   @searchOps {
+    basePath:compare path used to build sub-pathing
     outType:'ecma6'||'common'//controls output js file for export versus module.exports
   }
 */
 function writeFile(f, outPath, searchOps){
   searchOps = searchOps || {}
-  outPath = ack.path(outPath).join(ack.path(f).getName()).path || f
+  var AOutPath = outPath ? ack.path(outPath) : ack.path(f)
+
+  if(searchOps.basePath){
+    var rx = new RegExp('^'+searchOps.basePath, 'i')
+    var addOn = ack.path(f).removeFileName().path.replace(rx,'')
+    output = AOutPath.join( addOn )
+  }
 
   var html = jade.renderFile(f)
-  var target = outPath+'.js'
   html = html.replace(/"/g, '\\\"')//escape(html)
   html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
   html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
@@ -80,9 +90,10 @@ function writeFile(f, outPath, searchOps){
     var output = 'export default "'+html+'"'
   }
 
-  return ack.path(outPath).removeFile().paramDir()
+  return AOutPath.paramDir()
   .callback(function(callback){
-    fs.writeFile(target, output, callback)
+    var outFilePath = AOutPath.Join(ack.path(f).getName()+'.js').path//append file name
+    fs.writeFile(outFilePath, output, callback)
   })
 
 }
@@ -122,6 +133,7 @@ function crawlFolders(path, outPath, searchOps){
   const fPath = ack.path(path)
   searchOps = searchOps || {}
   searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
+  searchOps.basePath = path
 
   return fPath.recurFilePath(outRepeater(outPath,searchOps), searchOps)
   .catch(e=>console.error(e))
