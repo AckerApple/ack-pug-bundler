@@ -1,0 +1,34 @@
+{
+  "name": "ack-pug-bundler",
+  "version": "1.0.0",
+  "description": "Package to watch and cut pug/jade files into .js files for importing into Javascript",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "ack-node": "^1.0.8"
+  },
+  "devDependencies": {
+    "mocha": "^2.5.3"
+  },
+  "scripts": {
+    "test": "mocha test/cases/ --recursive",
+    "test:watch": "mocha test/cases/ --recursive --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AckerApple/ack-pug-bundler.git"
+  },
+  "keywords": [
+    "pug",
+    "jade",
+    "templates"
+  ],
+  "author": "Acker Apple",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/AckerApple/ack-pug-bundler/issues"
+  },
+  "homepage": "https://github.com/AckerApple/ack-pug-bundler#readme"
+}
