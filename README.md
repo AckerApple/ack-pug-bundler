@@ -20,6 +20,8 @@ $ npm install ack-pug-bundler --save-dev
 ```
 
 ## Example Watch
+Use this example to watch pug/jade files for changes and then write the compile results elsewhere
+
 > Create file: watch-pug.js
 ```
 var ackPug = require("ack-pug-bundler")
@@ -38,6 +40,8 @@ console.log('[ack-pug-bundler]:watching', folderPath)
 ```
 
 ## Example Build All
+Use this example to compile all pug/jade files and then write the compile results elsewhere
+
 > Create file: build-pug.js
 ```
 var ackPug = require("ack-pug-bundler")
