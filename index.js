@@ -3,43 +3,60 @@ const ack = require('ack-node')
 var jade = require('jade')
 var fs = require('fs')
 var isPugFile = require('./watch-filter')
+var watch = require('watch')
 
 module.exports.crawlFolders = crawlFolders
+module.exports.watchPath = watchPath
 module.exports.writeFile = writeFile
 module.exports.createMonitor = createMonitor
 module.exports.monitorFileDelete = monitorFileDelete
 
-function monitorFileChange(f) {
-  if(isPugFile(f)){
-    writeFile(f)
-    console.log('\x1b[34m[ack-pug-monitor]:wrote template to js: \x1b[0m'+f)
-  }else{
-    console.log('\x1b[33mignored changes to: \x1b[0m'+f)
+function watchPath(folderPath, outPath, searchOps){
+  watch.createMonitor((folderPath||'.'), monitorLoader(outPath, searchOps))
+}
+
+function monitorLoader(outPath, searchOps){
+  return function(monitor){
+    createMonitor(monitor, outPath, searchOps)
   }
 }
 
-function monitorFileDelete(filePath) {
+function monitorFileChange(f, outPath, searchOps) {
+  if(isPugFile(f)){
+    return writeFile(f, outPath, searchOps)
+    .then(function(){
+      console.log('\x1b[36m[ack-pug-monitor]:wrote: \x1b[0m'+f)
+    })
+  }
+}
+
+function monitorFileDelete(filePath, outPath) {
   var jadeF = filePath+'.js'
 
+  outPath = ack.path(outPath).join(ack.path(f).getName()).path || f
+
   if(isPugFile(jadeF)){
-    fs.unlink(jadeF)
-    console.log('\x1b[31mdeleted: \x1b[0m'+filePath)
-  }else{
-    console.log('\x1b[33mignored delete: \x1b[0m'+filePath)
+    fs.unlink(outPath)
+    console.log('\x1b[31m[ack-pug-monitor]\x1b[0m:deleted: '+filePath)
   }
 }
 
-function createMonitor(monitor) {
-  monitor.on("created", monitorFileChange)
-  monitor.on("changed", monitorFileChange)
-  monitor.on("removed", monitorFileDelete)
+function createMonitor(monitor, outPath, searchOps) {
+  monitor.on("created", function(f){
+    monitorFileChange(f, outPath, searchOps)
+  })
+  
+  monitor.on("changed", function(f){
+    monitorFileChange(f, outPath, searchOps)
+  })
+  
+  monitor.on("removed", function(f){
+    monitorFileDelete(f, outPath)
+  })
 
   process.on('exit',()=>{
     monitor.stop();// Stop watching
-    console.log('monitor closed')
   })
-
-  console.log('monitor on')
 }
 
 /**
@@ -57,28 +74,27 @@ function writeFile(f, outPath, searchOps){
   html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
   html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
   
-  console.log('searchOps.outType',searchOps.outType)
   if(searchOps.outType=='common'){
     var output = 'module.exports="'+html+'"'
   }else{
     var output = 'export default "'+html+'"'
   }
 
-  fs.writeFile(target, output,function(err){
-    if(err){
-      console.log('err',err)
-    }
-  });
+  return ack.path(outPath).removeFile().paramDir()
+  .callback(function(callback){
+    fs.writeFile(target, output, callback)
+  })
+
 }
 
 
 
 function repeater(f, outPath, searchOps){
-  if(f.path.search(/\.jade\.js$/)>=0){
+  if(f.path.search(/\.(pug|jade)\.js$/)>=0){
     deleteRepeater(f)
     return
   }
-  writeFile(f.path, outPath, searchOps)
+  return writeFile(f.path, outPath, searchOps)
 }
 
 function outRepeater(outPath, searchOps){
@@ -105,9 +121,8 @@ function crawlFolders(path, outPath, searchOps){
   outPath = outPath || path
   const fPath = ack.path(path)
   searchOps = searchOps || {}
-  searchOps.filter = searchOps.filter || ['**/*.pug','**/*.jade']
+  searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
 
   return fPath.recurFilePath(outRepeater(outPath,searchOps), searchOps)
-  .catch(e=>console.log(e))
-  console.log('\x1b[34mWriting all template files\x1b[0m')
+  .catch(e=>console.error(e))
 }
