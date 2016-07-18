@@ -36,7 +36,7 @@ function monitorFileChange(f, outPath, searchOps) {
 function monitorFileDelete(filePath, outPath) {
   var jadeF = filePath+'.js'
 
-  outPath = ack.path(outPath).join(ack.path(f).getName()).path || f
+  outPath = ack.path(outPath).join(ack.path(filePath).getName()).path || f
 
   if(isPugFile(jadeF)){
     fs.unlink(outPath)

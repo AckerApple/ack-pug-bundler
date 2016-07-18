@@ -2,6 +2,8 @@
 All notable changes to this project will be documented here.
 
 ## [1.0.1] - 2016-07-18
+### Fixed
+- watch deletes had bug
 ### Enhanced
 - crawlPath instead of crawlFolders naming convention
 
