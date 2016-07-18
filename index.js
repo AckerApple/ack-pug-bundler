@@ -7,7 +7,8 @@ var fs = require('fs')
 var isPugFile = require('./watch-filter')
 var watch = require('watch')
 
-module.exports.crawlFolders = crawlFolders
+module.exports.crawlPath = crawlPath
+module.exports.crawlFolders = crawlPath//deprecated alias
 module.exports.watchPath = watchPath
 module.exports.writeFile = writeFile
 module.exports.createMonitor = createMonitor
@@ -128,7 +129,7 @@ function deleteRepeater(f){
     ]
   }
 */
-function crawlFolders(path, outPath, searchOps){
+function crawlPath(path, outPath, searchOps){
   outPath = outPath || path
   const fPath = ack.path(path)
   searchOps = searchOps || {}

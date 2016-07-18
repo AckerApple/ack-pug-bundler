@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.0.1] - 2016-07-18
+### Enhanced
+- crawlPath instead of crawlFolders naming convention
+
 ## [1.0.0] - 2016-07-15
 ### Ensured sub structure is maintained
 
