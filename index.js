@@ -1,8 +1,8 @@
 "use strict";
 
-const ack = require('ack-node')
+const ackPath = require('ack-path')
 
-var jade = require('jade')
+var jade = require('pug')
 var fs = require('fs')
 var isPugFile = require('./watch-filter')
 var watch = require('watch')
@@ -36,7 +36,7 @@ function monitorFileChange(f, outPath, searchOps) {
 function monitorFileDelete(filePath, outPath) {
   var jadeF = filePath+'.js'
 
-  outPath = ack.path(outPath).join(ack.path(filePath).getName()).path || f
+  outPath = ackPath(outPath).join(ackPath(filePath).getName()).path || f
 
   if(isPugFile(jadeF)){
     fs.unlink(outPath)
@@ -72,11 +72,11 @@ function createMonitor(monitor, outPath, searchOps) {
 */
 function writeFile(f, outPath, searchOps){
   searchOps = searchOps || {}
-  var AOutPath = outPath ? ack.path(outPath) : ack.path(f)
+  var AOutPath = outPath ? ackPath(outPath) : ackPath(f)
 
   if(searchOps.basePath){
     var rx = new RegExp('^'+searchOps.basePath, 'i')
-    var addOn = ack.path(f).removeFileName().path.replace(rx,'')
+    var addOn = ackPath(f).removeFileName().path.replace(rx,'')
     output = AOutPath.join( addOn )
   }
 
@@ -93,7 +93,7 @@ function writeFile(f, outPath, searchOps){
 
   return AOutPath.paramDir()
   .callback(function(callback){
-    var outFilePath = AOutPath.Join(ack.path(f).getName()+'.js').path//append file name
+    var outFilePath = AOutPath.Join(ackPath(f).getName()+'.js').path//append file name
     fs.writeFile(outFilePath, output, callback)
   })
 
@@ -116,7 +116,7 @@ function outRepeater(outPath, searchOps){
 }
 
 function deleteRepeater(f){
-  const F = ack.file(f.path)
+  const F = ackPath(f.path).file()
   return F.Join().removeExt().exists().if(false,()=>F.delete())
 }
 
@@ -131,7 +131,7 @@ function deleteRepeater(f){
 */
 function crawlPath(path, outPath, searchOps){
   outPath = outPath || path
-  const fPath = ack.path(path)
+  const fPath = ackPath(path)
   searchOps = searchOps || {}
   searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
   searchOps.basePath = path

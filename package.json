@@ -1,13 +1,14 @@
 {
   "name": "ack-pug-bundler",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Watch and bundle pug/jade files into .js files for importing into Javascript",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "ack-node": "^1.0.8",
+    "ack-path": "^1.0.0",
+    "pug": "^2.0.0-beta4",
     "watch": "^0.19.1"
   },
   "devDependencies": {

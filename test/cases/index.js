@@ -1,7 +1,7 @@
 "use strict";
 
 var assert = require('assert')
-var ack = require('ack-node')
+var ackPath = require('ack-path')
 var path = require('path')
 var index = require('../../index')
 
@@ -9,9 +9,9 @@ describe('ack-pug-monitor',function(){
   it('#crawlPath:common',function(done){
     var folderPath = path.join(__dirname,'../','src')   
     var outPath = path.join(folderPath,'../','result-js-files')
-    var PugOne = ack.file(outPath).join('pug-one.pug.js')
-    var PugTwo = ack.file(outPath).join('pug-two.pug.js')
-    var SubPug = ack.file(outPath).join('sub-folder','sub-folder-test.pug.js')
+    var PugOne = ackPath(outPath).file().join('pug-one.pug.js')
+    var PugTwo = ackPath(outPath).file().join('pug-two.pug.js')
+    var SubPug = ackPath(outPath).file().join('sub-folder','sub-folder-test.pug.js')
 
     index.crawlPath(folderPath, outPath, {outType:'common'})
     .delay(10)
