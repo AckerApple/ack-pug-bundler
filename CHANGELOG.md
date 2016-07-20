@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.1.0] - 2016-07-19
+### Changed
+- Replaced ack-node dependency with ack-path
+
 ## [1.0.1] - 2016-07-18
 ### Fixed
 - watch deletes had bug
