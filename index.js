@@ -15,7 +15,7 @@ module.exports.createMonitor = createMonitor
 module.exports.monitorFileDelete = monitorFileDelete
 
 function watchPath(folderPath, outPath, searchOps){
-  searchOps = paramPathSearchOps(path, searchOps)
+  searchOps = paramPathSearchOps(folderPath, searchOps)
   watch.createMonitor((folderPath||'.'), monitorLoader(outPath, searchOps))
 }
 
