@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.1.1] - 2016-07-25
+### Fixed
+- The watch was not output files with correct directory structure as the build process
+
 ## [1.1.0] - 2016-07-19
 ### Changed
 - Replaced ack-node dependency with ack-path

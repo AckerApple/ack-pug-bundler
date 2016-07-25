@@ -15,6 +15,7 @@ module.exports.createMonitor = createMonitor
 module.exports.monitorFileDelete = monitorFileDelete
 
 function watchPath(folderPath, outPath, searchOps){
+  searchOps = paramPathSearchOps(path, searchOps)
   watch.createMonitor((folderPath||'.'), monitorLoader(outPath, searchOps))
 }
 
@@ -120,6 +121,13 @@ function deleteRepeater(f){
   return F.Join().removeExt().exists().if(false,()=>F.delete())
 }
 
+function paramPathSearchOps(path, searchOps){
+  searchOps = searchOps || {}
+  searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
+  searchOps.basePath = path
+  return searchOps
+}
+
 /**
   @searchOps {
     outType:'ecma6'||'common'//controls output js file for export versus module.exports
@@ -132,9 +140,7 @@ function deleteRepeater(f){
 function crawlPath(path, outPath, searchOps){
   outPath = outPath || path
   const fPath = ackPath(path)
-  searchOps = searchOps || {}
-  searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
-  searchOps.basePath = path
+  searchOps = paramPathSearchOps(path, searchOps)
 
   return fPath.recurFilePath(outRepeater(outPath,searchOps), searchOps)
   .catch(e=>console.error(e))
