@@ -57,12 +57,14 @@ ackPug.crawlPath(folderPath, outPath0)
 .then(function(){
   console.log('[ack-pug-bundler]:ecma6 completed', folderPath)
 })
+.catch(console.log.bind(console))
 
 //pug files written with require() syntax
 ackPug.crawlPath(folderPath, outPath1, {outType:'common'})
 .then(function(){
   console.log('[ack-pug-bundler]:commonJs completed', folderPath)
 })
+.catch(console.log.bind(console))
 ```
 
 
