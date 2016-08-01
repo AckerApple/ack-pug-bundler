@@ -119,8 +119,7 @@ function createMonitor(monitor, outPath, searchOps) {
   })*/
 }
 
-function pugPathToString(path){
-  var html = jade.renderFile(path)
+function escapePugString(html){
   html = html.replace(/"/g, '\\\"')//escape(html)
   html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
   html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
@@ -134,7 +133,7 @@ function reduceBasePath(path, basePath){
 
 function pugPathToMeta(path, basePath){
   var meta = {
-    string: pugPathToString(path),
+    string: jade.renderFile(path),
     path: ackPath(path).removeFileName().path,
     filePath: path,
     key: basePath ? reduceBasePath(path, basePath) : path
@@ -186,7 +185,8 @@ function writeFileByMeta(meta){
     var header = 'export default '
   }
 
-  var output = header + '"' + meta.string + '"'
+  var body = escapePugString(meta.string)
+  var output = header + '"' + body + '"'
 
   return AOutPath.paramDir()
   .callback(function(callback){
@@ -256,6 +256,7 @@ function writeMetaOb(bodyOb, outPath, searchOps){
       var header = 'export default '
     }
 
+
     body = header + body
   }
  
@@ -303,7 +304,7 @@ function crawlPath(path, outPath, searchOps){
   .then(function(resultArray){
     var promises = []
 
-    if(searchOps.asOneFile || searchOps.asJsonFile){
+    if(searchOps && (searchOps.asOneFile || searchOps.asJsonFile)){
       promises.push( metaArrayToOneFile(resultArray,outPath,searchOps) )
     }else{
       for(let x=resultArray.length-1; x >= 0; --x){
