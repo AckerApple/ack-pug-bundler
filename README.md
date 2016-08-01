@@ -138,7 +138,9 @@ module.exports= "<div>Hello Other World</div>"
 
 
 ## Example asJsonFile
-This is the most powerful example. Mastering the following functionality, is recommended
+Produce one JSON file that has all your template files
+
+> TIP: If you are using [JSPM](https://www.npmjs.com/package/jspm) to bundle web architectures, you will most likely want to use the attribute "asOneFile" because [JSPM](https://www.npmjs.com/package/jspm) does not natively import JSON files.
 
 > Create file: write-pugs.js
 
@@ -169,6 +171,8 @@ node write-pugs.js
 
 ## Example asOneFile
 In most cases, it is better to use the attribute "asJsonFile". This attribute may only be needed when a true javascript file is required.
+
+> TIP: If you are using [JSPM](https://www.npmjs.com/package/jspm) to bundle web architectures, you will most likely want to use the attribute "asOneFile" because [JSPM](https://www.npmjs.com/package/jspm) does not natively import JSON files.
 
 > Create file: write-pugs.js
 
