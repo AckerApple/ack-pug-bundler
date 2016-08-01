@@ -7,7 +7,7 @@ var index = require('../../index')
 
 describe('ack-pug-monitor',()=>{
   describe('#crawlPath',()=>{
-    it.only('asJsonFile',done=>{
+    it('asJsonFile',done=>{
       var folderPath = path.join(__dirname,'../','src')   
       var outPath = path.join(folderPath,'../','result-js-files')
       var tPath = ackPath(outPath).join('templates.json')
