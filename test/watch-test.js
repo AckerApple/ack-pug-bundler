@@ -7,7 +7,10 @@ var outPath1 = path.join(__dirname,"result-js-files","commonJs")
 //pug files written with ecma6 export syntax
 ackPug.watchPath(folderPath, outPath0)
 
-//pug files written with require() syntax
+//pug files written with module.exports syntax
 ackPug.watchPath(folderPath, outPath1, {outType:'common'})
+
+//pug files written as one file with module.exports syntax
+ackPug.watchPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.js'})
 
 console.log('[ack-pug-bundler]:watching', folderPath)

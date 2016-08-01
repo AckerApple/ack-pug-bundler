@@ -5,28 +5,51 @@ var ackPath = require('ack-path')
 var path = require('path')
 var index = require('../../index')
 
-describe('ack-pug-monitor',function(){
-  it('#crawlPath:common',function(done){
-    var folderPath = path.join(__dirname,'../','src')   
-    var outPath = path.join(folderPath,'../','result-js-files')
-    var PugOne = ackPath(outPath).file().join('pug-one.pug.js')
-    var PugTwo = ackPath(outPath).file().join('pug-two.pug.js')
-    var SubPug = ackPath(outPath).file().join('sub-folder','sub-folder-test.pug.js')
+describe('ack-pug-monitor',()=>{
+  describe('#crawlPath',()=>{
+    it('asOneFile',done=>{
+      var folderPath = path.join(__dirname,'../','src')   
+      var outPath = path.join(folderPath,'../','result-js-files')
+      var tPath = ackPath(outPath).join('templates.js')
+      
+      index.crawlPath(folderPath, outPath, {outType:'common', asOneFile:true})
+      .delay(10)
+      .then(()=>tPath.exists())
+      .then(yesNo=>{
+        assert.equal(yesNo, true)
+      })
+      .then(()=>require(tPath.path))
+      .then(contents=>{
+        assert.equal(typeof contents['./watch-test'], 'string')
+        assert.equal(typeof contents['./pug-two'], 'string')
+        assert.equal(typeof contents['./pug-one'], 'string')
+        assert.equal(typeof contents['./sub-folder/sub-folder-test'], 'string')
+      })
+      .then(done).catch(done)
+    })
 
-    index.crawlPath(folderPath, outPath, {outType:'common'})
-    .delay(10)
-    .then(()=>PugOne.exists())
-    .then(yesNo=>{
-      assert.equal(yesNo, true)
+    it('seperateFiles',done=>{
+      var folderPath = path.join(__dirname,'../','src')   
+      var outPath = path.join(folderPath,'../','result-js-files')
+      var PugOne = ackPath(outPath).file().join('pug-one.pug.js')
+      var PugTwo = ackPath(outPath).file().join('pug-two.pug.js')
+      var SubPug = ackPath(outPath).file().join('sub-folder','sub-folder-test.pug.js')
+
+      index.crawlPath(folderPath, outPath, {outType:'common'})
+      .delay(10)
+      .then(()=>PugOne.exists())
+      .then(yesNo=>{
+        assert.equal(yesNo, true)
+      })
+      .then(()=>PugTwo.exists())
+      .then(yesNo=>{
+        assert.equal(yesNo, true)
+      })
+      .then(()=>SubPug.exists())
+      .then(yesNo=>{
+        assert.equal(yesNo, true)
+      })
+      .then(done).catch(done)
     })
-    .then(()=>PugTwo.exists())
-    .then(yesNo=>{
-      assert.equal(yesNo, true)
-    })
-    .then(()=>SubPug.exists())
-    .then(yesNo=>{
-      assert.equal(yesNo, true)
-    })
-    .then(done).catch(done)
   })
 })

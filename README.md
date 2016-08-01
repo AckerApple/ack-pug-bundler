@@ -3,13 +3,27 @@ Watch and bundle pug/jade files into .js files for importing into Javascript web
 
 This package converts .pug and .jade files into .pug.js or .jade.js files and also comes with file watching functionality to compile template files, when changes occur to them.
 
+### Table of Contents
+- [Pre-Compiled Approach to Including Templates](#pre-compiled-approach-to-including-templates)
+- [Recommended Installation](#recommended-installation)
+- [Functionality Overview](#functionality-overview)
+- [Example Single File](#example-single-file)
+- [Example Multi File](#example-multi-file)
+- [Example asOneFile](#example-asonefile)
+- [Example Watch](#example-watch)
+- [Example Build All](#example-build-all)
+- [Example NPM Script](#example-npm-script)
+
 > The intended use of this package, is to be used during front-end aka client-side code development where the bundling process is performed in NodeJs.
+
+## Pre-Compiled Approach to Including Templates
+This package is built on the principle, that templates should be pre-compiled BEFORE any javascript bundling processes.
 
 Have you heard or used any of the following?
 - pug-loader or jade-loader
 - plugin-pug or plugin-jade
 
-The above mentioned packages, all compile pug/jade files during the js build process. This approach isn't always ideal and sometimes .js file extensions are needed to be present BEFORE the js build process.
+The above mentioned packages, all compile pug/jade files DURING the js build process. This approach isn't always ideal and sometimes it is better to just have templates compiled into importable .js files BEFORE any script building process.
 
 > TIP: ack-pug-bundler watch/build processes should run synchronous(before) any other watch/build processes that require the produced pug/jade .js compiled files.
 
@@ -19,10 +33,142 @@ This package is only needed during the development of another package, install f
 $ npm install ack-pug-bundler --save-dev
 ```
 
+## Functionality Overview
+Not examples, more like documentation on what does what
+
+```
+var ackPug = require('ack-pug-bundler')
+
+//compile and write just one file
+ackPug.writeFile(pugFilePath[, (outputPath||options), options])
+
+//compile and write multiple files
+ackPug.crawlPath(pugFilePath[, (outputPath||options), options])
+
+//compile and write multiple files on file change events
+ackPug.watchPath(pugFilePath[, (outputPath||options), options])
+```
+
+- @pugFilePath: read path source
+- @outputPath: file path to write to. default=pugFilePath
+- @options:{asOneFile, outType}
+> asOneFile: controls output style and file name of single bundling mode
+> outType: common or ecma6. default=ecma6
+
+
+## Example Single File
+A great place to start. We will compile a .pug file to a .js file.
+
+> Create a pug template file named: main.pug
+
+```
+div Hello World
+```
+
+> Create file: write-pug.js
+
+```
+var ackPug = require("ack-pug-bundler")
+var filePath = require("path").join(__dirname,"main.pug")
+
+//main.pug.js file is written with ecma6 export syntax
+ackPug.writeFile(writeFile)
+```
+
+> Now, in a command terminal, run the following
+
+```
+node write-pug.js
+```
+
+> The result of the above command, created the file main.pug.js
+>> Below is the file main.pug.js
+
+```
+export default "<div>Hello World</div>"
+```
+
+
+## Example Multi File
+A more robust use case. Let's take two files and write three.
+
+> Create a pug/jade template file named: main.pug
+
+```
+div Hello World
+```
+
+> Create another pug/jade template file named: other-main.pug
+
+```
+div Hello Other World
+```
+
+> Create file: write-pugs.js
+
+```
+var ackPug = require("ack-pug-bundler")
+var filePath = __dirname
+
+//main.pug.js and other-main.pug.js file is written with ecma6 export syntax
+ackPug.crawlPath(filePath, {outType:'common'})
+```
+
+> Now, in a command terminal, run the following
+
+```
+node write-pugs.js
+```
+
+> The result of the above command, created several files
+
+>> Below is the file main.pug.js
+
+```
+module.exports= "<div>Hello World</div>"
+```
+
+>> Below is the file other-main.pug.js
+
+```
+module.exports= "<div>Hello Other World</div>"
+```
+
+
+## Example asOneFile
+
+> Create file: write-pugs.js
+
+```
+var ackPug = require("ack-pug-bundler")
+
+//templates.js file is written with ecma6 export syntax
+ackPug.crawlPath(__dirname, {asOneFile:'templates.js'})
+```
+
+> Now, in a command terminal, run the following
+
+```
+node write-pugs.js
+```
+
+> The result of the above command, created templates.js
+>> Below is the file templates.js
+
+```
+export default {
+  "timestamp": 1470005320783,
+  "./main" : "<div>Hello World</div>",
+  "./other-main" : "<div>Hello Other World</div>"
+}
+```
+
+
 ## Example Watch
 Use this example to watch pug/jade files for changes and then write the compile results elsewhere
 
 > Create file: watch-pug.js
+
 ```
 var ackPug = require("ack-pug-bundler")
 var path = require("path")
@@ -33,8 +179,11 @@ var outPath1 = path.join(__dirname,"result-js-files","commonJs")
 //pug files written with ecma6 export syntax
 ackPug.watchPath(folderPath, outPath0)
 
-//pug files written with require() syntax
+//pug files written with module.exports syntax
 ackPug.watchPath(folderPath, outPath1, {outType:'common'})
+
+//pug files written as one file with module.exports syntax
+ackPug.watchPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.js'})
 
 console.log('[ack-pug-bundler]:watching', folderPath)
 ```
@@ -43,35 +192,43 @@ console.log('[ack-pug-bundler]:watching', folderPath)
 Use this example to compile all pug/jade files and then write the compile results elsewhere
 
 > Create file: build-pug.js
+
 ```
 var ackPug = require("ack-pug-bundler")
 var path = require("path")
 var folderPath = path.join(__dirname,"src")
-var outPath0 = path.join(__dirname,"result-js-files","commonJs")
-var outPath1 = path.join(__dirname,"result-js-files","ecma6")
+var outPath0 = path.join(__dirname,"result-js-files","ecma6")
+var outPath1 = path.join(__dirname,"result-js-files","commonJs")
 
 console.log('[ack-pug-bundler]:building', folderPath)
 
-//pug files written with ecma6 export syntax
+//pug files compled and written with ecma6 export syntax
 ackPug.crawlPath(folderPath, outPath0)
 .then(function(){
   console.log('[ack-pug-bundler]:ecma6 completed', folderPath)
 })
 .catch(console.log.bind(console))
 
-//pug files written with require() syntax
+//pug files compiled written with module.exports syntax
 ackPug.crawlPath(folderPath, outPath1, {outType:'common'})
 .then(function(){
   console.log('[ack-pug-bundler]:commonJs completed', folderPath)
 })
 .catch(console.log.bind(console))
-```
 
+//pug files compiled into one file and written with module.exports syntax
+ackPug.crawlPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.js'})
+.then(function(){
+  console.log('[ack-pug-bundler]:commonJs single-file completed', folderPath)
+})
+.catch(console.log.bind(console))
+```
 
 ## Example NPM Script
 Based on example usages above, you can create a quick command script
 
 > Edit package.json and save
+
 ```
 {
   "scripts": {

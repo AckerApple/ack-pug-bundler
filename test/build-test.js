@@ -11,9 +11,18 @@ ackPug.crawlPath(folderPath, outPath0)
 .then(function(){
   console.log('[ack-pug-bundler]:ecma6 completed', folderPath)
 })
+.catch(console.log.bind(console))
 
-//pug files compiled written with require() syntax
+//pug files compiled written with module.exports syntax
 ackPug.crawlPath(folderPath, outPath1, {outType:'common'})
 .then(function(){
   console.log('[ack-pug-bundler]:commonJs completed', folderPath)
 })
+.catch(console.log.bind(console))
+
+//pug files compiled into one file and written with module.exports syntax
+ackPug.crawlPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.js'})
+.then(function(){
+  console.log('[ack-pug-bundler]:commonJs single-file completed', folderPath)
+})
+.catch(console.log.bind(console))

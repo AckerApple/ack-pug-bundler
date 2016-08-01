@@ -15,11 +15,22 @@ module.exports.createMonitor = createMonitor
 module.exports.monitorFileDelete = monitorFileDelete
 
 function watchPath(folderPath, outPath, searchOps){
+  if(outPath && typeof outPath!='string'){
+    searchOps = outPath
+    outPath = path
+  }
+
   searchOps = paramPathSearchOps(folderPath, searchOps)
-  watch.createMonitor((folderPath||'.'), monitorLoader(outPath, searchOps))
+  watch.createMonitor((folderPath||'.'), monitorLoader(folderPath, outPath, searchOps))
 }
 
-function monitorLoader(outPath, searchOps){
+function monitorLoader(folderPath, outPath, searchOps){
+  if(searchOps.asOneFile){
+    return function(monitor){
+      createOneFileMonitor(monitor, folderPath, outPath, searchOps)
+    }
+  }
+
   return function(monitor){
     createMonitor(monitor, outPath, searchOps)
   }
@@ -29,7 +40,7 @@ function monitorFileChange(f, outPath, searchOps) {
   if(isPugFile(f)){
     return writeFile(f, outPath, searchOps)
     .then(function(){
-      console.log('\x1b[36m[ack-pug-monitor]:wrote: \x1b[0m'+f)
+      console.log('\x1b[36m[ack-pug-bundler]:wrote: \x1b[0m'+f)
     })
   }
 }
@@ -37,12 +48,57 @@ function monitorFileChange(f, outPath, searchOps) {
 function monitorFileDelete(filePath, outPath) {
   var jadeF = filePath+'.js'
 
-  outPath = ackPath(outPath).join(ackPath(filePath).getName()).path || f
+  var name = ackPath(filePath).getName()
+  outPath = outPath ? ackPath(outPath).join(name).path : f
 
   if(isPugFile(jadeF)){
     fs.unlink(outPath)
-    console.log('\x1b[31m[ack-pug-monitor]\x1b[0m:deleted: '+filePath)
+    console.log('\x1b[31m[ack-pug-bundler]\x1b[0m:deleted: '+filePath)
   }
+}
+
+function createOneFileMonitor(monitor, folderPath, outPath, searchOps){
+  var metaOb = {}
+
+  return getMetaArrayByPathing(folderPath, outPath, searchOps)
+  .then(function(ma){
+    metaOb = metaArrayToOb(ma)
+  
+    var save = function(){
+      writeMetaOb(metaOb, outPath, searchOps)
+      .then(function(res){
+        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m wrote single file')
+      })
+      .catch( console.log.bind(console) )
+    }
+
+    monitor.on("created", function(f){
+      var meta = pugRequestToMeta(f, outPath, searchOps)
+      var key = '.'+ackPath(meta.key).removeExt().path
+      metaOb[ key ] = meta.string
+      save()
+    })
+    
+    monitor.on("changed", function(f){
+      var meta = pugRequestToMeta(f, outPath, searchOps)
+      var key = '.'+ackPath(meta.key).removeExt().path
+      metaOb[ key ] = meta.string
+      save()
+    })
+    
+    monitor.on("removed", function(f){
+      var meta = pugRequestToMeta(f, outPath, searchOps)
+      var key = '.'+ackPath(meta.key).removeExt().path
+      delete metaOb[ key ]
+      save()
+    })
+  })
+  .catch( console.log.bind(console) )
+  
+  /*
+  process.on('exit',()=>{
+    monitor.stop();// Stop watching
+  })*/  
 }
 
 function createMonitor(monitor, outPath, searchOps) {
@@ -57,10 +113,45 @@ function createMonitor(monitor, outPath, searchOps) {
   monitor.on("removed", function(f){
     monitorFileDelete(f, outPath)
   })
-
+  /*
   process.on('exit',()=>{
     monitor.stop();// Stop watching
-  })
+  })*/
+}
+
+function pugPathToString(path){
+  var html = jade.renderFile(path)
+  html = html.replace(/"/g, '\\\"')//escape(html)
+  html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
+  html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
+  return html
+}
+
+function reduceBasePath(path, basePath){
+  var rx = new RegExp('^'+basePath, 'i')
+  return ackPath(path).path.replace(rx,'')
+}
+
+function pugPathToMeta(path, basePath){
+  var meta = {
+    string: pugPathToString(path),
+    path: ackPath(path).removeFileName().path,
+    filePath: path,
+    key: basePath ? reduceBasePath(path, basePath) : path
+  }
+
+  meta.keyPath = ackPath(meta.key).removeFileName().path
+
+  return meta
+}
+
+function pugRequestToMeta(f, outPath, searchOps){
+  var meta = pugPathToMeta(f, searchOps.basePath)
+
+  meta.outPath = outPath || f
+  meta.searchOps = searchOps || {}
+
+  return meta
 }
 
 /**
@@ -72,47 +163,55 @@ function createMonitor(monitor, outPath, searchOps) {
   }
 */
 function writeFile(f, outPath, searchOps){
-  searchOps = searchOps || {}
-  var AOutPath = outPath ? ackPath(outPath) : ackPath(f)
-
-  if(searchOps.basePath){
-    var rx = new RegExp('^'+searchOps.basePath, 'i')
-    var addOn = ackPath(f).removeFileName().path.replace(rx,'')
-    output = AOutPath.join( addOn )
+  if(outPath && typeof outPath!='string'){
+    searchOps = outPath
+    outPath = path
   }
 
-  var html = jade.renderFile(f)
-  html = html.replace(/"/g, '\\\"')//escape(html)
-  html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
-  html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
+  var meta = pugRequestToMeta(f, outPath, searchOps)
+
+  return writeFileByMeta(meta)
+}
+
+function writeFileByMeta(meta){
+  var AOutPath = ackPath(meta.outPath)
+
+  if(meta.keyPath!=meta.key){
+    AOutPath.join( meta.keyPath )//replication of folder depth
+  }
   
-  if(searchOps.outType=='common'){
-    var output = 'module.exports="'+html+'"'
+  if(meta.searchOps.outType=='common'){
+    var header = 'module.exports='
   }else{
-    var output = 'export default "'+html+'"'
+    var header = 'export default '
   }
+
+  var output = header + '"' + meta.string + '"'
 
   return AOutPath.paramDir()
   .callback(function(callback){
-    var outFilePath = AOutPath.Join(ackPath(f).getName()+'.js').path//append file name
+    var fileName = ackPath(meta.filePath).getName()+'.js'
+    var outFilePath = AOutPath.Join(fileName).path//append file name
     fs.writeFile(outFilePath, output, callback)
   })
-
 }
 
 
 
-function repeater(f, outPath, searchOps){
+function writeRepeater(f, outPath, searchOps){
   if(f.path.search(/\.(pug|jade)\.js$/)>=0){
     deleteRepeater(f)
     return
   }
-  return writeFile(f.path, outPath, searchOps)
+
+  var meta = pugRequestToMeta(f.path, outPath, searchOps)
+  return writeFileByMeta(meta)
 }
 
-function outRepeater(outPath, searchOps){
+function outRepeater(outPath, searchOps, resultArray){
   return function(f){
-    return repeater(f, outPath, searchOps)
+    resultArray.push( pugRequestToMeta(f.path, outPath, searchOps) )
+    //return writeRepeater(f, outPath, searchOps)
   }
 }
 
@@ -128,6 +227,53 @@ function paramPathSearchOps(path, searchOps){
   return searchOps
 }
 
+function metaArrayToOb(metaArray){
+  var bodyOb = {timestamp:Date.now()}
+  for(let x=metaArray.length-1; x >= 0; --x){
+    var meta = metaArray[x]
+    var key = '.'+ackPath(meta.key).removeExt().path
+    bodyOb[key] = meta.string
+  }
+
+  return bodyOb
+}
+
+function writeMetaOb(bodyOb, outPath, searchOps){
+  if(searchOps.outType=='common'){
+    var header = 'module.exports='
+  }else{
+    var header = 'export default '
+  }
+  
+  searchOps.asOneFile = typeof searchOps.asOneFile!='string' ? 'templates.js' : searchOps.asOneFile
+  
+  var body = JSON.stringify(bodyOb, null, 2)
+  var output = header + body
+
+  var Path = ackPath(outPath)
+
+  return Path.paramDir()
+  .then(function(){
+    return Path.join(searchOps.asOneFile).writeFile(output)
+  })
+}
+
+function metaArrayToOneFile(metaArray, outPath, searchOps){
+  var bodyOb = metaArrayToOb(metaArray)
+  return writeMetaOb(bodyOb, outPath, searchOps)
+}
+
+function getMetaArrayByPathing(path, outPath, searchOps){
+  outPath = outPath || path
+  const fPath = ackPath(path)
+  searchOps = paramPathSearchOps(path, searchOps)
+  var resultArray = []
+  return fPath.recurFilePath( outRepeater(outPath,searchOps,resultArray), searchOps )
+  .then(function(){
+    return resultArray
+  })
+}
+
 /**
   @searchOps {
     outType:'ecma6'||'common'//controls output js file for export versus module.exports
@@ -138,10 +284,26 @@ function paramPathSearchOps(path, searchOps){
   }
 */
 function crawlPath(path, outPath, searchOps){
-  outPath = outPath || path
-  const fPath = ackPath(path)
-  searchOps = paramPathSearchOps(path, searchOps)
+  if(outPath && typeof outPath!='string'){
+    searchOps = outPath
+    outPath = path
+  }
 
-  return fPath.recurFilePath(outRepeater(outPath,searchOps), searchOps)
-  .catch(e=>console.error(e))
+  return getMetaArrayByPathing(path, outPath, searchOps)
+  .then(function(resultArray){
+    var promises = []
+
+    if(searchOps.asOneFile){
+      promises.push( metaArrayToOneFile(resultArray,outPath,searchOps) )
+    }else{
+      for(let x=resultArray.length-1; x >= 0; --x){
+        var meta = resultArray[x]
+        promises.push( writeFileByMeta(meta) )
+      }
+    }
+
+    return promises
+  })
+  .all()
+  .catch( console.log.bind(console) )
 }
