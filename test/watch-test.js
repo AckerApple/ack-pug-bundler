@@ -13,4 +13,7 @@ ackPug.watchPath(folderPath, outPath1, {outType:'common'})
 //pug files written as one file with module.exports syntax
 ackPug.watchPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.js'})
 
+//pug files written as one file with module.exports syntax
+ackPug.watchPath(folderPath, outPath1, {asJsonFile:'templates.json'})
+
 console.log('[ack-pug-bundler]:watching', folderPath)

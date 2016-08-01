@@ -25,7 +25,7 @@ function watchPath(folderPath, outPath, searchOps){
 }
 
 function monitorLoader(folderPath, outPath, searchOps){
-  if(searchOps.asOneFile){
+  if(searchOps.asOneFile || searchOps.asJsonFile){
     return function(monitor){
       createOneFileMonitor(monitor, folderPath, outPath, searchOps)
     }
@@ -239,22 +239,32 @@ function metaArrayToOb(metaArray){
 }
 
 function writeMetaOb(bodyOb, outPath, searchOps){
-  if(searchOps.outType=='common'){
-    var header = 'module.exports='
-  }else{
-    var header = 'export default '
-  }
-  
-  searchOps.asOneFile = typeof searchOps.asOneFile!='string' ? 'templates.js' : searchOps.asOneFile
-  
   var body = JSON.stringify(bodyOb, null, 2)
-  var output = header + body
+  
+  if(searchOps.asJsonFile){
+    //true to default file name
+    searchOps.asJsonFile = typeof searchOps.asJsonFile!='string' ? 'templates.json' : searchOps.asJsonFile
+    var fileName = searchOps.asJsonFile
+  }else if(searchOps.asOneFile){
+    //true to default file name
+    searchOps.asOneFile = typeof searchOps.asOneFile!='string' ? 'templates.js' : searchOps.asOneFile
+    var fileName = searchOps.asOneFile
+
+    if(searchOps.outType=='common'){
+      var header = 'module.exports='
+    }else{
+      var header = 'export default '
+    }
+
+    body = header + body
+  }
+ 
 
   var Path = ackPath(outPath)
 
   return Path.paramDir()
   .then(function(){
-    return Path.join(searchOps.asOneFile).writeFile(output)
+    return Path.join(fileName).writeFile(body)
   })
 }
 
@@ -293,7 +303,7 @@ function crawlPath(path, outPath, searchOps){
   .then(function(resultArray){
     var promises = []
 
-    if(searchOps.asOneFile){
+    if(searchOps.asOneFile || searchOps.asJsonFile){
       promises.push( metaArrayToOneFile(resultArray,outPath,searchOps) )
     }else{
       for(let x=resultArray.length-1; x >= 0; --x){

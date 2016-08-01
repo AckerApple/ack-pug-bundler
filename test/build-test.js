@@ -26,3 +26,10 @@ ackPug.crawlPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.j
   console.log('[ack-pug-bundler]:commonJs single-file completed', folderPath)
 })
 .catch(console.log.bind(console))
+
+//pug files compiled into one json file
+ackPug.crawlPath(folderPath, outPath1, {asJsonFile:'templates.json'})
+.then(function(){
+  console.log('[ack-pug-bundler]:single-json-file completed', folderPath)
+})
+.catch(console.log.bind(console))

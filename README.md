@@ -9,6 +9,7 @@ This package converts .pug and .jade files into .pug.js or .jade.js files and al
 - [Functionality Overview](#functionality-overview)
 - [Example Single File](#example-single-file)
 - [Example Multi File](#example-multi-file)
+- [Example asJsonFile](#example-asjsonfile)
 - [Example asOneFile](#example-asonefile)
 - [Example Watch](#example-watch)
 - [Example Build All](#example-build-all)
@@ -51,8 +52,9 @@ ackPug.watchPath(pugFilePath[, (outputPath||options), options])
 
 - @pugFilePath: read path source
 - @outputPath: file path to write to. default=pugFilePath
-- @options:{asOneFile, outType}
-> asOneFile: controls output style and file name of single bundling mode
+- @options:{asJsonFile, asOneFile, outType}
+> asJsonFile: controls output as being just one json file (! this is where the money is !)
+> asOneFile: controls output style and file name of single bundling mode. In most cases, asJsonFile, is the best way to go.
 > outType: common or ecma6. default=ecma6
 
 
@@ -135,7 +137,38 @@ module.exports= "<div>Hello Other World</div>"
 ```
 
 
+## Example asJsonFile
+This is the most powerful example. Mastering the following functionality, is recommended
+
+> Create file: write-pugs.js
+
+```
+var ackPug = require("ack-pug-bundler")
+
+//templates.js file is written with ecma6 export syntax
+ackPug.crawlPath(__dirname, {asJsonFile:'templates.js'})
+```
+
+> Now, in a command terminal, run the following
+
+```
+node write-pugs.js
+```
+
+> The result of the above command, created templates.json
+>> Below is the file templates.json
+
+```
+{
+  "timestamp": 1470005320783,
+  "./main" : "<div>Hello World</div>",
+  "./other-main" : "<div>Hello Other World</div>"
+}
+```
+
+
 ## Example asOneFile
+In most cases, it is better to use the attribute "asJsonFile". This attribute may only be needed when a true javascript file is required.
 
 > Create file: write-pugs.js
 

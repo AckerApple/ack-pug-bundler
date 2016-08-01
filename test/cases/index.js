@@ -7,6 +7,27 @@ var index = require('../../index')
 
 describe('ack-pug-monitor',()=>{
   describe('#crawlPath',()=>{
+    it.only('asJsonFile',done=>{
+      var folderPath = path.join(__dirname,'../','src')   
+      var outPath = path.join(folderPath,'../','result-js-files')
+      var tPath = ackPath(outPath).join('templates.json')
+      
+      index.crawlPath(folderPath, outPath, {asJsonFile:true})
+      .delay(10)
+      .then(()=>tPath.exists())
+      .then(yesNo=>{
+        assert.equal(yesNo, true)
+      })
+      .then(()=>require(tPath.path))
+      .then(contents=>{
+        assert.equal(typeof contents['./watch-test'], 'string')
+        assert.equal(typeof contents['./pug-two'], 'string')
+        assert.equal(typeof contents['./pug-one'], 'string')
+        assert.equal(typeof contents['./sub-folder/sub-folder-test'], 'string')
+      })
+      .then(done).catch(done)
+    })
+
     it('asOneFile',done=>{
       var folderPath = path.join(__dirname,'../','src')   
       var outPath = path.join(folderPath,'../','result-js-files')

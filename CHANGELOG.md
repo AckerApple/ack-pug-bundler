@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.1.5] - 2016-08-01
+### Added
+- asJsonFile
+
 ## [1.1.4] - 2016-07-31
 ### Added
 - asOneFile
