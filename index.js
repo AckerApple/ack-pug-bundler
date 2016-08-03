@@ -14,14 +14,23 @@ module.exports.writeFile = writeFile
 module.exports.createMonitor = createMonitor
 module.exports.monitorFileDelete = monitorFileDelete
 
+//watch function filter to only watch pug||jade files
+var watchOptions = {
+  filter:module.exports = function(f){
+    const res = f.search(/(\.(pug|jade)$|[\\/][^\\/.]+$)/)>=0
+    return res ? true : false
+  }
+}
+
 function watchPath(folderPath, outPath, searchOps){
   if(outPath && typeof outPath!='string'){
     searchOps = outPath
     outPath = path
   }
 
+
   searchOps = paramPathSearchOps(folderPath, searchOps)
-  watch.createMonitor((folderPath||'.'), monitorLoader(folderPath, outPath, searchOps))
+  watch.createMonitor((folderPath||'.'), watchOptions, monitorLoader(folderPath, outPath, searchOps))
 }
 
 function monitorLoader(folderPath, outPath, searchOps){
