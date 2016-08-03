@@ -16,7 +16,7 @@ module.exports.monitorFileDelete = monitorFileDelete
 
 //watch function filter to only watch pug||jade files
 var watchOptions = {
-  filter:module.exports = function(f){
+  filter: function(f){
     const res = f.search(/(\.(pug|jade)$|[\\/][^\\/.]+$)/)>=0
     return res ? true : false
   }
