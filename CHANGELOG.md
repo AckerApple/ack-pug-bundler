@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.1.11] - 2016-08-03
+## Added
+- asOneFile produces a get(templateName) method
+
 ## [1.1.9] - 2016-08-03
 ### Added
 - filter to file watch so only pug||jade files are watched

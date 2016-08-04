@@ -170,7 +170,7 @@ node write-pugs.js
 
 
 ## Example asOneFile
-In most cases, it is better to use the attribute "asJsonFile". This attribute may only be needed when a true javascript file is required.
+Bundles all templates into just one file. Also includes handy get(templateName) function in output file.
 
 > TIP: If you are using [JSPM](https://www.npmjs.com/package/jspm) to bundle web architectures, you will most likely want to use the attribute "asOneFile" because [JSPM](https://www.npmjs.com/package/jspm) does not natively import JSON files.
 
@@ -196,7 +196,8 @@ node write-pugs.js
 export default {
   "timestamp": 1470005320783,
   "./main" : "<div>Hello World</div>",
-  "./other-main" : "<div>Hello Other World</div>"
+  "./other-main" : "<div>Hello Other World</div>",
+  get:function(templateName){...gets template or throws error..}
 }
 ```
 

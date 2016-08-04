@@ -247,6 +247,7 @@ function metaArrayToOb(metaArray){
   return bodyOb
 }
 
+//method used to write a single file
 function writeMetaOb(bodyOb, outPath, searchOps){
   var body = JSON.stringify(bodyOb, null, 2)
   
@@ -265,6 +266,9 @@ function writeMetaOb(bodyOb, outPath, searchOps){
       var header = 'export default '
     }
 
+    //add get function that throw errors on templates
+    body = body.substring(0, body.length-2)+',\n'
+    body = body + "  get:function(p){if(this[p]){return this[p]}var ne=new Error('Template not found: '+p+'. Available-Templates: '+Object.keys(this));ne.code=404;throw ne}\n}"
 
     body = header + body
   }

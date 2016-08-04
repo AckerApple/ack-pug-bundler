@@ -45,6 +45,12 @@ describe('ack-pug-monitor',()=>{
         assert.equal(typeof contents['./pug-two'], 'string')
         assert.equal(typeof contents['./pug-one'], 'string')
         assert.equal(typeof contents['./sub-folder/sub-folder-test'], 'string')
+        assert.equal(typeof contents.get, 'function')
+
+        contents.get('nothing')//causes 404
+      })
+      .catch(404,e=>{
+        assert.equal(e.code, 404)
       })
       .then(done).catch(done)
     })
