@@ -81,25 +81,31 @@ function createOneFileMonitor(monitor, folderPath, outPath, searchOps){
       .catch( console.log.bind(console) )
     }
 
-    monitor.on("created", function(f){
-      var meta = pugRequestToMeta(f, outPath, searchOps)
-      var key = '.'+ackPath(meta.key).removeExt().path
-      metaOb[ key ] = meta.string
-      save()
-    })
+    var onChange = function(f){
+      try{
+        var meta = pugRequestToMeta(f, outPath, searchOps)
+        var key = '.'+ackPath(meta.key).removeExt().path
+        metaOb[ key ] = meta.string
+        save()
+      }catch(e){
+        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m \x1b[31mFailed to render:\x1b[0m '+f)
+        console.error(e)
+      }
+    }
+
+    monitor.on("created", onChange)
     
-    monitor.on("changed", function(f){
-      var meta = pugRequestToMeta(f, outPath, searchOps)
-      var key = '.'+ackPath(meta.key).removeExt().path
-      metaOb[ key ] = meta.string
-      save()
-    })
+    monitor.on("changed", onChange)
     
     monitor.on("removed", function(f){
-      var meta = pugRequestToMeta(f, outPath, searchOps)
-      var key = '.'+ackPath(meta.key).removeExt().path
-      delete metaOb[ key ]
-      save()
+      try{
+        var meta = pugRequestToMeta(f, outPath, searchOps)
+        var key = '.'+ackPath(meta.key).removeExt().path
+        delete metaOb[ key ]
+        save()
+      }catch(e){
+        console.error(e)
+      }
     })
   })
   .catch( console.log.bind(console) )
