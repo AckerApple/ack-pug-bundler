@@ -1,10 +1,13 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.1.13] - 2016-08-12
+## Fixed
+- when error occurs in get method of produced files, the list of templates was an array and not string-list
+
 ## [1.1.12] - 2016-08-05
 ## Fixed
 - watcher no longer dies if pug/jade render error is encountered
-
 
 ## [1.1.11] - 2016-08-03
 ## Added
