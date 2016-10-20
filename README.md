@@ -54,15 +54,29 @@ ackPug.watchPath(pugFilePath[, (outputPath||options), options])
 
 - @pugFilePath: read path source
 - @outputPath: file path to write to. default=pugFilePath
-- @options:{asJsonFile, asOneFile, outType}
-> asJsonFile: controls output as being just one json file (! this is where the money is !)
-> asOneFile: controls output style and file name of single bundling mode. In most cases, asJsonFile, is the best way to go.
-> outType: common or ecma6. default=ecma6
+- @options:
+```
+{
+  asJsonFile,//controls output as being just one json file (this should deprecate into outType=json)
+  asOneFile,//controls output style and file name of single bundling mode. In most cases, asJsonFile, is the best way to go.
+  outType:'ecma6',//string, common or ecma6
+  outFileExt:'js',
+  pretty:false//useful true when outType=string
+}
+```
 
 ## CLI
 The following command will recursivily compile all .pug|.jade files into one templates.js
 ```
 ack-pug-bundler src/ src/templates.js
+```
+
+Supported Options
+```
+--watch
+--outFileExt=js
+--outType=ecma6||common||string
+--pretty
 ```
 
 > Recommended to include the following in your package.json scripts

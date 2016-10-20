@@ -33,6 +33,26 @@ function watchPath(folderPath, outPath, searchOps){
   watch.createMonitor((folderPath||'.'), watchOptions, monitorLoader(folderPath, outPath, searchOps))
 }
 
+/**
+  f - file to write
+  outPath - folder to write to
+  @searchOps {
+    outFileExt:'js'
+    basePath:compare path used to build sub-pathing
+    outType:'ecma6'||'common'//controls output js file for export versus module.exports
+  }
+*/
+function writeFile(f, outPath, searchOps){
+  if(outPath && typeof outPath!='string'){
+    searchOps = outPath
+    outPath = path
+  }
+
+  var meta = pugRequestToMeta(f, outPath, searchOps)
+
+  return writeFileByMeta(meta)
+}
+
 function monitorLoader(folderPath, outPath, searchOps){
   if(searchOps.asOneFile || searchOps.asJsonFile){
     return function(monitor){
@@ -146,9 +166,9 @@ function reduceBasePath(path, basePath){
   return ackPath(path).path.replace(rx,'')
 }
 
-function pugPathToMeta(path, basePath){
+function pugPathToMeta(path, basePath, options){
   var meta = {
-    string: jade.renderFile(path),
+    string: jade.renderFile(path,options),
     path: ackPath(path).removeFileName().path,
     filePath: path,
     key: basePath ? reduceBasePath(path, basePath) : path
@@ -160,31 +180,12 @@ function pugPathToMeta(path, basePath){
 }
 
 function pugRequestToMeta(f, outPath, searchOps){
-  var meta = pugPathToMeta(f, searchOps.basePath)
+  var meta = pugPathToMeta(f, searchOps.basePath, searchOps)
 
   meta.outPath = outPath || f
   meta.searchOps = searchOps || {}
 
   return meta
-}
-
-/**
-  f - file to write
-  outPath - folder to write to
-  @searchOps {
-    basePath:compare path used to build sub-pathing
-    outType:'ecma6'||'common'//controls output js file for export versus module.exports
-  }
-*/
-function writeFile(f, outPath, searchOps){
-  if(outPath && typeof outPath!='string'){
-    searchOps = outPath
-    outPath = path
-  }
-
-  var meta = pugRequestToMeta(f, outPath, searchOps)
-
-  return writeFileByMeta(meta)
 }
 
 function writeFileByMeta(meta){
@@ -193,19 +194,33 @@ function writeFileByMeta(meta){
   if(meta.keyPath!=meta.key){
     AOutPath.join( meta.keyPath )//replication of folder depth
   }
-  
-  if(meta.searchOps.outType=='common'){
-    var header = 'module.exports='
-  }else{
-    var header = 'export default '
+
+  let output = ''
+  switch(meta.searchOps.outType){
+    case 'string':break;
+
+    case 'common':
+      output = 'module.exports='
+      break;
+
+    default:output = 'export default '
   }
 
-  var body = escapePugString(meta.string)
-  var output = header + '"' + body + '"'
+  if(meta.searchOps.outType=='string'){
+    output += meta.string
+  }else{
+    output += '"' + escapePugString(meta.string) + '"'
+  }
 
   return AOutPath.paramDir()
   .callback(function(callback){
-    var fileName = ackPath(meta.filePath).getName()+'.js'
+    if(meta.searchOps.outFileExt){
+      var dotArray = ackPath(meta.filePath).getName().split('.')
+      dotArray.pop()//remove last dot notation aka file extension
+      var fileName = dotArray.join('.')+'.'+meta.searchOps.outFileExt
+    }else{
+      var fileName = ackPath(meta.filePath).getName()+'.js'
+    }
     var outFilePath = AOutPath.Join(fileName).path//append file name
     fs.writeFile(outFilePath, output, callback)
   })
