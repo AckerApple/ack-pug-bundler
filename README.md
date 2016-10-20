@@ -7,13 +7,15 @@ This package converts .pug and .jade files into .pug.js or .jade.js files and al
 - [Pre-Compiled Approach to Including Templates](#pre-compiled-approach-to-including-templates)
 - [Recommended Installation](#recommended-installation)
 - [Functionality Overview](#functionality-overview)
-- [Example Single File](#example-single-file)
-- [Example Multi File](#example-multi-file)
-- [Example asJsonFile](#example-asjsonfile)
-- [Example asOneFile](#example-asonefile)
-- [Example Watch](#example-watch)
-- [Example Build All](#example-build-all)
-- [Example NPM Script](#example-npm-script)
+- [CLI](#cli)
+- [Examples](#examples)
+    - [Example Single File](#example-single-file)
+    - [Example Multi File](#example-multi-file)
+    - [Example asJsonFile](#example-asjsonfile)
+    - [Example asOneFile](#example-asonefile)
+    - [Example Watch](#example-watch)
+    - [Example Build All](#example-build-all)
+    - [Example NPM Script](#example-npm-script)
 
 > The intended use of this package, is to be used during front-end aka client-side code development where the bundling process is performed in NodeJs.
 
@@ -57,8 +59,24 @@ ackPug.watchPath(pugFilePath[, (outputPath||options), options])
 > asOneFile: controls output style and file name of single bundling mode. In most cases, asJsonFile, is the best way to go.
 > outType: common or ecma6. default=ecma6
 
+## CLI
+The following command will recursivily compile all .pug|.jade files into one templates.js
+```
+ack-pug-bundler src/ src/templates.js
+```
 
-## Example Single File
+> Recommended to include the following in your package.json scripts
+```
+"scripts":{
+  "build:pug": "ack-pug-bundler src/ src/",
+  "watch:pug": "ack-pug-bundler src/ src/ --watch",
+}
+```
+
+
+## Examples
+
+### Example Single File
 A great place to start. We will compile a .pug file to a .js file.
 
 > Create a pug template file named: main.pug
@@ -91,7 +109,7 @@ export default "<div>Hello World</div>"
 ```
 
 
-## Example Multi File
+### Example Multi File
 A more robust use case. Let's take two files and write three.
 
 > Create a pug/jade template file named: main.pug
@@ -137,7 +155,7 @@ module.exports= "<div>Hello Other World</div>"
 ```
 
 
-## Example asJsonFile
+### Example asJsonFile
 Produce one JSON file that has all your template files
 
 > TIP: If you are using [JSPM](https://www.npmjs.com/package/jspm) to bundle web architectures, you will most likely want to use the attribute "asOneFile" because [JSPM](https://www.npmjs.com/package/jspm) does not natively import JSON files.
@@ -169,7 +187,7 @@ node write-pugs.js
 ```
 
 
-## Example asOneFile
+### Example asOneFile
 Bundles all templates into just one file. Also includes handy get(templateName) function in output file.
 
 > TIP: If you are using [JSPM](https://www.npmjs.com/package/jspm) to bundle web architectures, you will most likely want to use the attribute "asOneFile" because [JSPM](https://www.npmjs.com/package/jspm) does not natively import JSON files.
@@ -202,7 +220,7 @@ export default {
 ```
 
 
-## Example Watch
+### Example Watch
 Use this example to watch pug/jade files for changes and then write the compile results elsewhere
 
 > Create file: watch-pug.js
@@ -226,7 +244,7 @@ ackPug.watchPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.j
 console.log('[ack-pug-bundler]:watching', folderPath)
 ```
 
-## Example Build All
+### Example Build All
 Use this example to compile all pug/jade files and then write the compile results elsewhere
 
 > Create file: build-pug.js
@@ -262,7 +280,7 @@ ackPug.crawlPath(folderPath, outPath1, {outType:'common', asOneFile:'templates.j
 .catch(console.log.bind(console))
 ```
 
-## Example NPM Script
+### Example NPM Script
 Based on example usages above, you can create a quick command script
 
 > Edit package.json and save

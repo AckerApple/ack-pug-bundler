@@ -1,6 +1,6 @@
 {
   "name": "ack-pug-bundler",
-  "version": "1.1.13",
+  "version": "1.1.14",
   "description": "Watch and bundle pug/jade files into .js files for importing into Javascript",
   "main": "index.js",
   "directories": {
@@ -21,8 +21,7 @@
     "test": "mocha test/cases/ --recursive",
     "test:watch": "mocha test/cases/ --recursive --watch",
     "watch:test": "node ./test/watch-test",
-    "build:test": "node ./test/build-test",
-    "what": "ack-pug-bundler"
+    "build:test": "node ./test/build-test"
   },
   "repository": {
     "type": "git",
