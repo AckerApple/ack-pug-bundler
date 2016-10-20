@@ -6,6 +6,9 @@
   "directories": {
     "test": "test"
   },
+  "bin": {
+    "ack-pug-bundler": "./cli.js"
+  },
   "dependencies": {
     "ack-path": "^1.0.0",
     "pug": "^2.0.0-beta4",
@@ -18,7 +21,8 @@
     "test": "mocha test/cases/ --recursive",
     "test:watch": "mocha test/cases/ --recursive --watch",
     "watch:test": "node ./test/watch-test",
-    "build:test": "node ./test/build-test"
+    "build:test": "node ./test/build-test",
+    "what": "ack-pug-bundler"
   },
   "repository": {
     "type": "git",
