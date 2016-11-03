@@ -72,20 +72,43 @@ ack-pug-bundler src/ src/templates.js
 ```
 
 Supported Options
-```
---watch
---outFileExt=js
---outType=ecma6||common||string
---pretty
-```
 
-> Recommended to include the following in your package.json scripts
+- watch
+    - specifies to watch files for changes and rerender at that time
+- outFileExt=js
+    - override output file extension
+    - not applicable when --oneHtmlFile
+- outType=ecma6||common||string
+    - determine flat html string OR import/export OR module.exports syntax
+- pretty
+    - resulting html strings can maintain readability
+- oneHtmlFile
+    - a convenience option to simply output one pug to one html file
+
+### CLI Script Conveniences
+Recommended to include the following in your package.json scripts for your convenience
+
 ```
 "scripts":{
+  "build:index": "ack-pug-bundler src/index.pug src/index.html --oneHtmlFile",
   "build:pug": "ack-pug-bundler src/ src/",
-  "watch:pug": "ack-pug-bundler src/ src/ --watch",
+  "watch:pug": "ack-pug-bundler src/ src/ --watch --pretty",
+  "build:pug:for-nodejs": "ack-pug-bundler src/ src/ --outType=common"
 }
 ```
+
+Script Descriptions
+
+- build:index
+    - Converts a single pug file into one html file
+- build:pug
+    - Converts multiple pug files into one .js file with import/export ecma6 like syntax
+- watch:pug
+    - Watches multiple pug files to convert into one .js file with import/export ecma6 like syntax
+- build:pug:for-nodejs
+    - Converts multiple pug files into one .js file with module.exports commonjs like syntax
+
+
 
 
 ## Examples

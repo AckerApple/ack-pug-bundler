@@ -30,7 +30,8 @@ function watchPath(folderPath, outPath, searchOps){
 
 
   searchOps = paramPathSearchOps(folderPath, searchOps)
-  watch.createMonitor((folderPath||'.'), watchOptions, monitorLoader(folderPath, outPath, searchOps))
+  var loader = monitorLoader(folderPath, outPath, searchOps)
+  watch.createMonitor((folderPath||'.'), watchOptions, loader)
 }
 
 /**
@@ -66,10 +67,11 @@ function monitorLoader(folderPath, outPath, searchOps){
 }
 
 function monitorFileChange(f, outPath, searchOps) {
-  if(isPugFile(f)){
-    return writeFile(f, outPath, searchOps)
-    .then(function(){
-      console.log('\x1b[36m[ack-pug-bundler]:wrote: \x1b[0m'+f)
+  if(isPugFile(f)){    
+    outPath = outPath || ackPath(f).removeFileName().path
+
+    return writeFile(f, outPath, searchOps).then(function(){
+      console.log('\x1b[36m[ack-pug-bundler]: wrote: \x1b[0m'+f)
     })
   }
 }
@@ -82,7 +84,7 @@ function monitorFileDelete(filePath, outPath) {
 
   if(isPugFile(jadeF)){
     fs.unlink(outPath)
-    console.log('\x1b[31m[ack-pug-bundler]\x1b[0m:deleted: '+filePath)
+    console.log('\x1b[31m[ack-pug-bundler]\x1b[0m: deleted: '+filePath)
   }
 }
 
@@ -108,7 +110,7 @@ function createOneFileMonitor(monitor, folderPath, outPath, searchOps){
         metaOb[ key ] = meta.string
         save()
       }catch(e){
-        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m \x1b[31mFailed to render:\x1b[0m '+f)
+        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m \x1b[31m Failed to render:\x1b[0m '+f)
         console.error(e)
       }
     }
@@ -188,15 +190,11 @@ function pugRequestToMeta(f, outPath, searchOps){
   return meta
 }
 
-function writeFileByMeta(meta){
-  var AOutPath = ackPath(meta.outPath)
-
-  if(meta.keyPath!=meta.key){
-    AOutPath.join( meta.keyPath )//replication of folder depth
-  }
-
+function stringToFile(string, path, options){
+  options = options || {}
+  
   let output = ''
-  switch(meta.searchOps.outType){
+  switch(options.outType){
     case 'string':break;
 
     case 'common':
@@ -206,24 +204,38 @@ function writeFileByMeta(meta){
     default:output = 'export default '
   }
 
-  if(meta.searchOps.outType=='string'){
-    output += meta.string
+  if(options.outType=='string'){
+    output += string
   }else{
-    output += '"' + escapePugString(meta.string) + '"'
+    output += '"' + escapePugString(string) + '"'
   }
 
-  return AOutPath.paramDir()
+  var AOutPath = ackPath(path)
+  if(options.outFileExt){
+    var dotArray = ackPath(path).getName().split('.')
+    dotArray.pop()//remove last dot notation aka file extension
+    var fileName = dotArray.join('.')+'.'+options.outFileExt
+  }else{
+    var fileName = ackPath(path).getName()+'.js'
+  }
+  var outFilePath = AOutPath.removeFileName().join(fileName).path//append file name
+
+  return ackPath(path).removeFileName().paramDir()
   .callback(function(callback){
-    if(meta.searchOps.outFileExt){
-      var dotArray = ackPath(meta.filePath).getName().split('.')
-      dotArray.pop()//remove last dot notation aka file extension
-      var fileName = dotArray.join('.')+'.'+meta.searchOps.outFileExt
-    }else{
-      var fileName = ackPath(meta.filePath).getName()+'.js'
-    }
-    var outFilePath = AOutPath.Join(fileName).path//append file name
     fs.writeFile(outFilePath, output, callback)
   })
+}
+
+function writeFileByMeta(meta){
+  var AOutPath = ackPath(meta.outPath)
+
+  if(meta.keyPath!=meta.key){
+    AOutPath.join( meta.keyPath )//replication of folder depth
+  }
+
+  AOutPath.join( ackPath(meta.filePath).getName() )//replication of folder depth
+
+  return stringToFile(meta.string, AOutPath.path, meta.searchOps)
 }
 
 
