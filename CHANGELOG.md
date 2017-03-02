@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.2.0] - 2017-03-02
+## Breaking Changes
+- updates packages that had a minor or greater version number change
+
 ## [1.1.13] - 2016-08-12
 ## Fixed
 - when error occurs in get method of produced files, the list of templates was an array and not string-list
