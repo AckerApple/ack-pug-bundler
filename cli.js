@@ -15,11 +15,15 @@ var options = {
 }
 
 var oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
+const oneToOne = argv.indexOf('--oneToOne')>0
 var fs = require('fs')
+
+const stats = fs.statSync(folderPath)
+const isDir = stats.isDirectory()
 
 readArguments()
 
-if(oneHtmlFile){
+if(oneToOne || oneHtmlFile){
   activateOneHtmlFileMode()
 }else{
   activateFolderMode()
@@ -39,7 +43,12 @@ function readArguments(){
   }
 
   if(isAsOneFile){
-    options.outPath = path.join(startPath, argv[1], '../')
+    options.outPath = path.join(startPath, argv[1])
+    
+    if(!isDir){
+      options.outPath = path.join(options.outPath, '../')
+    }
+    
     var outFileName = argv[1].split(/(\\|\/)/g).pop()
     options.asOneFile = outFileName
     options.outFilePath = path.join(options.outPath, options.asOneFile)
@@ -65,20 +74,31 @@ function activateFolderMode(){
 }
 
 function activateOneHtmlFileMode(){
-  options.outFilePath = options.outFilePath || folderPath.replace(/(\.[^.]*)$/g,'.html')
+  options.outFilePath = options.outFilePath || toHtmlFileName(folderPath)
 
   var pug = require('pug')
 
-  function buildHtmlFile(){    
+  function buildHtmlFile(from){
+    const fileName = from.split(path.sep).pop()
+    console.log('fileName', fileName)
+    const htmlFileName = toHtmlFileName( fileName )
+    console.log('htmlFileName', htmlFileName)
+
+    const outTo = path.join(options.outFilePath, htmlFileName)
     console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Build single html file')
-    var html = pug.renderFile(folderPath, options);
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: writing '+options.outFilePath)
-    fs.writeFileSync(options.outFilePath, html)
+    var html = pug.renderFile(from, options);
+    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: writing '+outTo)
+    
+    if(oneHtmlFile){
+      fs.writeFileSync(outTo, html)
+    }else{
+      ackPug.stringToFile(html, outTo, options)
+    }
   }
 
   if(watch){
     var watcher = require('watch')
-    var parentFolder = path.join(folderPath,'../')
+    var parentFolder = isDir ? folderPath : path.join(folderPath,'../')
     var inFileName = folderPath.split(/(\\|\/)/g).pop()
     var watchOps = {
       filter: function(f){
@@ -92,8 +112,17 @@ function activateOneHtmlFileMode(){
       monitor.on("changed", buildHtmlFile)
       monitor.on("removed", ()=>fs.unlink(options.outFilePath))
     })
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Watching single file'+ parentFolder)
+    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Watching', parentFolder)
   }else{
-    buildHtmlFile()
+    buildHtmlFile(folderPath)
   }
+}
+
+function getDefaultExt(){
+  return options.outType == 'ts' ? '.ts' : '.js'
+}
+
+function toHtmlFileName(name, ext){
+  ext = ext || (oneHtmlFile ? '.html' : getDefaultExt())
+  return name.replace(/(\.[^.]*)$/g, ext)
 }

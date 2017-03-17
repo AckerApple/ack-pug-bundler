@@ -190,6 +190,24 @@ function pugRequestToMeta(f, outPath, searchOps){
   return meta
 }
 
+module.exports.stringToFile = stringToFile
+
+//assumes file name
+function myStringToFile(string, path, options){
+  var AOutPath = ackPath(path)
+  if(options.outFileExt){
+    var dotArray = ackPath(path).getName().split('.')
+    dotArray.pop()//remove last dot notation aka file extension
+    var fileName = dotArray.join('.')+'.'+options.outFileExt
+  }else{
+    var fileName = ackPath(path).getName()+'.js'
+  }
+  var outFilePath = AOutPath.removeFileName().join(fileName).path//append file name
+
+  return stringToFile(outFilePath, path, options)
+}
+
+//does not make out file assumptions
 function stringToFile(string, path, options){
   options = options || {}
   
@@ -201,6 +219,10 @@ function stringToFile(string, path, options){
       output = 'module.exports='
       break;
 
+    case 'ts':
+      output = 'export const string = '
+      break;
+
     default:output = 'export default '
   }
 
@@ -210,19 +232,9 @@ function stringToFile(string, path, options){
     output += '"' + escapePugString(string) + '"'
   }
 
-  var AOutPath = ackPath(path)
-  if(options.outFileExt){
-    var dotArray = ackPath(path).getName().split('.')
-    dotArray.pop()//remove last dot notation aka file extension
-    var fileName = dotArray.join('.')+'.'+options.outFileExt
-  }else{
-    var fileName = ackPath(path).getName()+'.js'
-  }
-  var outFilePath = AOutPath.removeFileName().join(fileName).path//append file name
-
   return ackPath(path).removeFileName().paramDir()
   .callback(function(callback){
-    fs.writeFile(outFilePath, output, callback)
+    fs.writeFile(path, output, callback)
   })
 }
 
@@ -235,7 +247,7 @@ function writeFileByMeta(meta){
 
   AOutPath.join( ackPath(meta.filePath).getName() )//replication of folder depth
 
-  return stringToFile(meta.string, AOutPath.path, meta.searchOps)
+  return myStringToFile(meta.string, AOutPath.path, meta.searchOps)
 }
 
 
