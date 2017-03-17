@@ -8,14 +8,15 @@ This package converts .pug and .jade files into .pug.js or .jade.js files and al
 - [Recommended Installation](#recommended-installation)
 - [Functionality Overview](#functionality-overview)
 - [CLI](#cli)
+  - [Supported Commands](#supported-commands)
 - [Examples](#examples)
-    - [Example Single File](#example-single-file)
-    - [Example Multi File](#example-multi-file)
-    - [Example asJsonFile](#example-asjsonfile)
-    - [Example asOneFile](#example-asonefile)
-    - [Example Watch](#example-watch)
-    - [Example Build All](#example-build-all)
-    - [Example NPM Script](#example-npm-script)
+  - [Example Single File](#example-single-file)
+  - [Example Multi File](#example-multi-file)
+  - [Example asJsonFile](#example-asjsonfile)
+  - [Example asOneFile](#example-asonefile)
+  - [Example Watch](#example-watch)
+  - [Example Build All](#example-build-all)
+  - [Example NPM Script](#example-npm-script)
 
 > The intended use of this package, is to be used during front-end aka client-side code development where the bundling process is performed in NodeJs.
 
@@ -71,19 +72,38 @@ The following command will recursivily compile all .pug|.jade files into one tem
 ack-pug-bundler src/ src/templates.js
 ```
 
-Supported Options
+### Supported Commands
 
 - watch
     - specifies to watch files for changes and rerender at that time
-- outFileExt=js
-    - override output file extension
-    - not applicable when --oneHtmlFile
-- outType=ecma6||common||string
-    - determine flat html string OR import/export OR module.exports syntax
+- outFileExt
+  - default = js
+  - override output file extension
+  - not applicable when --oneHtmlFile
+- outType
+  - determine flat html string OR import/export OR module.exports syntax
+  - ecma6 || common || string || ts
+    - ts mode will `export const string`
 - pretty
     - resulting html strings can maintain readability
+- oneToOne
+  - when argument is present, in file names will be used to output file names
 - oneHtmlFile
     - a convenience option to simply output one pug to one html file
+
+Extended Example
+```
+ack-pug-bundler pugs/ templates/ --outType ts --oneToOne
+```
+> The above example will cast ./pugs/template.pug to ./templates/template.pug.ts
+>> ./templates/template.pug.ts : `export const string = "..."`
+
+File Ext Example
+```
+ack-pug-bundler pugs/ templates/ --outFileExt .ts --outType ts --oneToOne
+```
+> The above example will cast ./pugs/template.pug to ./templates/template.ts
+>> ./templates/template.ts : `export const string = "..."`
 
 ### CLI Script Conveniences
 Recommended to include the following in your package.json scripts for your convenience

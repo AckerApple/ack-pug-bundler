@@ -5,11 +5,13 @@ var argv = process.argv.slice(2)
 var isAsOneFile = argv.length>1 && argv[1].substring(0, 1)!='-'
 
 var path = require('path')
+const ackPath = require('ack-path')
 var startPath = process.cwd()
 var folderPath = path.join(startPath, argv[0])
 var watch = argv.indexOf('--watch')>0
 var ackPug = require("ack-pug-bundler")
 var path = require("path")
+const log = require("./log.function")
 var options = {
   pretty:argv.indexOf('--pretty')>0
 }
@@ -24,7 +26,7 @@ const isDir = stats.isDirectory()
 readArguments()
 
 if(oneToOne || oneHtmlFile){
-  activateOneHtmlFileMode()
+  activateOneFileMode()
 }else{
   activateFolderMode()
 }
@@ -33,13 +35,13 @@ function readArguments(){
   var outTypeTest=argv.filter(v=>v.search(/--outType/)>=0)
   if(outTypeTest.length>0){
     options.outType = outTypeTest[0].split('=').pop()
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: output type is '+options.outType)
+    log('output type is '+options.outType)
   }
 
-  var fileExtTest=argv.filter(v=>v.search(/--outFileExt/)>=0)
-  if(fileExtTest.length>0){
-    options.outFileExt = fileExtTest[0].split('=').pop()
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: output file ext is '+options.outFileExt)
+  const fileExtTest = argv.indexOf('--outFileExt')
+  if(fileExtTest>0){
+    options.outFileExt = argv[ fileExtTest+1 ]
+    log('output file ext is', options.outFileExt)
   }
 
   if(isAsOneFile){
@@ -52,48 +54,52 @@ function readArguments(){
     var outFileName = argv[1].split(/(\\|\/)/g).pop()
     options.asOneFile = outFileName
     options.outFilePath = path.join(options.outPath, options.asOneFile)
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Mode is build as '+outFileName)
+    if(outFileName)log('Mode is build as',outFileName)
   }else{
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: File mode is write inplace')
+    log('File mode is write inplace')
   }
 }
 
 function activateFolderMode(){
   if(watch){
     ackPug.watchPath(folderPath, options.outPath, options)
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m:Watching', folderPath)
+    log('Watching', folderPath)
   }else{
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m:Building', folderPath)
+    log('Building', folderPath)
     //pug files written with ecma6 export syntax
     ackPug.crawlPath(folderPath, options.outPath, options)
     .then(()=>{
-      console.log('\x1b[36m[ack-pug-bundler]\x1b[0m:built', folderPath)
+      log('built', folderPath)
     })
-    .catch(console.log.bind(console))
+    .catch(log.bind(console))
   }
 }
 
-function activateOneHtmlFileMode(){
-  options.outFilePath = options.outFilePath || toHtmlFileName(folderPath)
+function activateOneFileMode(){
+  options.outFilePath = options.outFilePath || toFileName(folderPath)
 
   var pug = require('pug')
 
-  function buildHtmlFile(from){
+  function fromToOutPath(from){
     const fileName = from.split(path.sep).pop()
-    console.log('fileName', fileName)
-    const htmlFileName = toHtmlFileName( fileName )
-    console.log('htmlFileName', htmlFileName)
+    return path.join(options.outFilePath, toFileName(fileName))
+  }
 
-    const outTo = path.join(options.outFilePath, htmlFileName)
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Build single html file')
+  function buildFile(from){
+    const outTo = fromToOutPath(from)
     var html = pug.renderFile(from, options);
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: writing '+outTo)
+    //log(' writing '+outTo)
     
     if(oneHtmlFile){
       fs.writeFileSync(outTo, html)
     }else{
       ackPug.stringToFile(html, outTo, options)
     }
+  }
+
+  function onFileChange(from){
+    log(' Build single html file')
+    buildFile(from)
   }
 
   if(watch){
@@ -110,11 +116,19 @@ function activateOneHtmlFileMode(){
     watcher.createMonitor(parentFolder, watchOps, monitor=>{
       monitor.on("created", buildHtmlFile)
       monitor.on("changed", buildHtmlFile)
-      monitor.on("removed", ()=>fs.unlink(options.outFilePath))
+      monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
     })
-    console.log('\x1b[36m[ack-pug-bundler]\x1b[0m: Watching', parentFolder)
+    log(' Watching', parentFolder)
   }else{
-    buildHtmlFile(folderPath)
+    const aPath = ackPath(folderPath)
+
+    aPath.isFile()
+    .if(true, ()=>[folderPath])
+    .if(false, ()=>aPath.recurFiles(File=>File.path))
+    .past( ()=>log('Building',folderPath) )
+    .map( filePath=>buildFile(filePath) )
+    .then( ()=>log('Compiled',options.outFilePath) )
+    .catch(e=>console.error(e))
   }
 }
 
@@ -122,7 +136,12 @@ function getDefaultExt(){
   return options.outType == 'ts' ? '.ts' : '.js'
 }
 
-function toHtmlFileName(name, ext){
-  ext = ext || (oneHtmlFile ? '.html' : getDefaultExt())
-  return name.replace(/(\.[^.]*)$/g, ext)
+function toFileName(name, ext){
+  ext = ext || (oneHtmlFile?'.html':getDefaultExt())
+
+  if(options.outFileExt || oneHtmlFile){
+    name = name.replace(/(\.[^.]*)$/g, '')
+  }
+
+  return name + ext
 }

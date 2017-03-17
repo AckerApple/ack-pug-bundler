@@ -1,6 +1,13 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.0] - 2017-03-17
+### Added
+- oneToOne option
+- Typescript export support
+### Breaking Change
+- The value of cli argument outFileExt now must be seperated by a space instead of =
+
 ## [1.2.0] - 2017-03-02
 ## Breaking Changes
 - updates packages that had a minor or greater version number change
