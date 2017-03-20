@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.2] - 2017-03-20
+### Fixed
+- cli watching
+
 ## [1.3.0] - 2017-03-17
 ### Added
 - oneToOne option

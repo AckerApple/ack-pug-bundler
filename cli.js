@@ -88,7 +88,7 @@ function activateOneFileMode(){
   function buildFile(from){
     const outTo = fromToOutPath(from)
     var html = pug.renderFile(from, options);
-    //log(' writing '+outTo)
+    //log('writing '+outTo)
     
     if(oneHtmlFile){
       fs.writeFileSync(outTo, html)
@@ -98,7 +98,7 @@ function activateOneFileMode(){
   }
 
   function onFileChange(from){
-    log(' Build single html file')
+    log(getServerTime(), from.substring(parentFolder.length, from.length))
     buildFile(from)
   }
 
@@ -114,11 +114,11 @@ function activateOneFileMode(){
     }
     
     watcher.createMonitor(parentFolder, watchOps, monitor=>{
-      monitor.on("created", buildHtmlFile)
-      monitor.on("changed", buildHtmlFile)
+      monitor.on("created", onFileChange)
+      monitor.on("changed", onFileChange)
       monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
     })
-    log(' Watching', parentFolder)
+    log('Watching', parentFolder)
   }else{
     const aPath = ackPath(folderPath)
 
@@ -144,4 +144,9 @@ function toFileName(name, ext){
   }
 
   return name + ext
+}
+
+function getServerTime(d){
+  d = d || new Date()
+  var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+d.getSeconds()+'.'+d.getMilliseconds()+' '+t
 }
