@@ -32,9 +32,9 @@ if(oneToOne || oneHtmlFile){
 }
 
 function readArguments(){
-  var outTypeTest=argv.filter(v=>v.search(/--outType/)>=0)
-  if(outTypeTest.length>0){
-    options.outType = outTypeTest[0].split('=').pop()
+  var outTypeTest = argv.indexOf('--outType')
+  if(outTypeTest>0){
+    options.outType = argv[outTypeTest+1]
     log('output type is '+options.outType)
   }
 
@@ -133,7 +133,7 @@ function activateOneFileMode(){
 }
 
 function getDefaultExt(){
-  return options.outType == 'ts' ? '.ts' : '.js'
+  return options.outType=='ts' ? '.ts' : '.js'
 }
 
 function toFileName(name, ext){
