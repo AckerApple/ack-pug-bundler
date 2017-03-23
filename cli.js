@@ -63,7 +63,7 @@ function readArguments(){
 function activateFolderMode(){
   if(watch){
     ackPug.watchPath(folderPath, options.outPath, options)
-    log('Watching', folderPath)
+    log('Watching', folderPath.substring(parentFolder.length, folderPath.length))
   }else{
     log('Building', folderPath)
     //pug files written with ecma6 export syntax
@@ -87,18 +87,25 @@ function activateOneFileMode(){
 
   function buildFile(from){
     const outTo = fromToOutPath(from)
-    var html = pug.renderFile(from, options);
-    //log('writing '+outTo)
-    
-    if(oneHtmlFile){
-      fs.writeFileSync(outTo, html)
-    }else{
-      ackPug.stringToFile(html, outTo, options)
+
+    try{
+      var html = pug.renderFile(from, options);
+      //log('writing '+outTo)
+      
+      if(oneHtmlFile){
+        fs.writeFileSync(outTo, html)
+      }else{
+        ackPug.stringToFile(html, outTo, options)
+      }
+    }catch(e){
+      log.error(e)
     }
   }
 
   function onFileChange(from){
     log(getServerTime(), from.substring(parentFolder.length, from.length))
+    const outTo = path.join(options.outPath, fromToOutPath(from).split(path.sep).pop())
+    log(getServerTime(), 'built', outTo.substring(startPath.length, outTo.length))
     buildFile(from)
   }
 
@@ -117,8 +124,9 @@ function activateOneFileMode(){
       monitor.on("created", onFileChange)
       monitor.on("changed", onFileChange)
       monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
+      process.once('SIGINT', ()=>monitor.stop())
     })
-    log('Watching', parentFolder)
+    log('Watching', parentFolder.substring(startPath.length, parentFolder.length))
   }else{
     const aPath = ackPath(folderPath)
 
@@ -148,5 +156,5 @@ function toFileName(name, ext){
 
 function getServerTime(d){
   d = d || new Date()
-  var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+d.getSeconds()+'.'+d.getMilliseconds()+' '+t
+  var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+d.getSeconds()+' '+t
 }

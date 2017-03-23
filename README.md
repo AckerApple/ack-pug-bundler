@@ -113,7 +113,7 @@ Recommended to include the following in your package.json scripts for your conve
   "build:index": "ack-pug-bundler src/index.pug src/index.html --oneHtmlFile",
   "build:pug": "ack-pug-bundler src/ src/",
   "watch:pug": "ack-pug-bundler src/ src/ --watch --pretty",
-  "build:pug:for-nodejs": "ack-pug-bundler src/ src/ --outType=common"
+  "build:pug:for-nodejs": "ack-pug-bundler src/ src/ --outType common"
 }
 ```
 

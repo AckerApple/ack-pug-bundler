@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.3] - 2017-03-23
+### Fixed
+- prevent watch crash from bad template rendering
+
 ## [1.3.2] - 2017-03-20
 ### Fixed
 - cli watching
