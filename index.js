@@ -274,9 +274,20 @@ function deleteRepeater(f){
   return F.Join().removeExt().exists().if(false,()=>F.delete())
 }
 
+/**
+  @searchOps{includeHtmls:false}
+*/
 function paramPathSearchOps(path, searchOps){
   searchOps = searchOps || {}
-  searchOps.filter = searchOps.filter || ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
+  if(!searchOps.filter){
+    searchOps.filter = ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
+    
+    if(searchOps.includeHtmls){
+      searchOps.filter.push('**/**.html')
+      searchOps.filter.push('**.html')
+    }
+  }
+
   searchOps.basePath = path
   return searchOps
 }
@@ -338,9 +349,7 @@ function getMetaArrayByPathing(path, outPath, searchOps){
   searchOps = paramPathSearchOps(path, searchOps)
   var resultArray = []
   return fPath.recurFilePath( outRepeater(outPath,searchOps,resultArray), searchOps )
-  .then(function(){
-    return resultArray
-  })
+  .then(()=>resultArray)
 }
 
 /**

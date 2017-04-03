@@ -9,12 +9,20 @@ const ackPath = require('ack-path')
 var startPath = process.cwd()
 var folderPath = path.join(startPath, argv[0])
 var watch = argv.indexOf('--watch')>0
-var ackPug = require("ack-pug-bundler")
+var ackPug = require("./index")//require("ack-pug-bundler")
 var path = require("path")
 const log = require("./log.function")
 var options = {
   pretty:argv.indexOf('--pretty')>0
 }
+
+const fileExts = ['pug','jade']
+options.includeHtmls = argv.indexOf('--includeHtmls')>=0
+if(options.includeHtmls){
+  fileExts.push('html')
+}
+
+const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
 
 var oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
 const oneToOne = argv.indexOf('--oneToOne')>0
@@ -87,9 +95,11 @@ function activateOneFileMode(){
 
   function buildFile(from){
     const outTo = fromToOutPath(from)
+    const isHtml = from.search(/\.html$/)>=0
 
     try{
-      var html = pug.renderFile(from, options);
+      //var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
+      var html = pug.renderFile(from, options)
       //log('writing '+outTo)
       
       if(oneHtmlFile){
@@ -115,7 +125,7 @@ function activateOneFileMode(){
     var inFileName = folderPath.split(/(\\|\/)/g).pop()
     var watchOps = {
       filter: function(f){
-        const res = f.search(inFileName)>=0
+        const res = f.search(inFileName)>=0 && f.search(regx)>=0
         return res ? true : false
       }
     }
@@ -132,7 +142,7 @@ function activateOneFileMode(){
 
     aPath.isFile()
     .if(true, ()=>[folderPath])
-    .if(false, ()=>aPath.recurFiles(File=>File.path))
+    .if(false, ()=>aPath.recurFiles(File=>File.path).then(filterResults))
     .past( ()=>log('Building',folderPath) )
     .map( filePath=>buildFile(filePath) )
     .then( ()=>log('Compiled',options.outFilePath) )
@@ -142,6 +152,10 @@ function activateOneFileMode(){
 
 function getDefaultExt(){
   return options.outType=='ts' ? '.ts' : '.js'
+}
+
+function filterResults(results){
+  return results.filter(v=>v.search(regx)>=0)
 }
 
 function toFileName(name, ext){
@@ -156,5 +170,5 @@ function toFileName(name, ext){
 
 function getServerTime(d){
   d = d || new Date()
-  var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+d.getSeconds()+' '+t
+  var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+('0'+d.getSeconds()).slice(-2)+' '+t
 }

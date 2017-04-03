@@ -9,6 +9,7 @@ This package converts .pug and .jade files into .pug.js or .jade.js files and al
 - [Functionality Overview](#functionality-overview)
 - [CLI](#cli)
   - [Supported Commands](#supported-commands)
+  - [Command Examples](#command-examples)
 - [Examples](#examples)
   - [Example Single File](#example-single-file)
   - [Example Multi File](#example-multi-file)
@@ -75,7 +76,7 @@ ack-pug-bundler src/ src/templates.js
 ### Supported Commands
 
 - watch
-    - specifies to watch files for changes and rerender at that time
+  - specifies to watch files for changes and rerender at that time
 - outFileExt
   - default = js
   - override output file extension
@@ -85,20 +86,30 @@ ack-pug-bundler src/ src/templates.js
   - ecma6 || common || string || ts
     - ts mode will `export const string`
 - pretty
-    - resulting html strings can maintain readability
+  - resulting html strings can maintain readability
 - oneToOne
   - when argument is present, in file names will be used to output file names
 - oneHtmlFile
-    - a convenience option to simply output one pug to one html file
+  - a convenience option to simply output one pug to one html file
+- includeHtmls
+  - An option to not only bundle pug/jade files but also cast HTML to js/ts file(s)
 
-Extended Example
+### Command Examples
+Open a command prompt terminal and execute the following commands
+
+#### Compile Htmls to Typescript files
+```bash
+ack-pug-bundler src/htmls/ src/templates/ --oneToOne --includeHtmls --outType ts
+```
+
+#### Extended Example
 ```bash
 ack-pug-bundler pugs/ templates/ --outType ts --oneToOne
 ```
 > The above example will cast ./pugs/template.pug to ./templates/template.pug.ts
 >> ./templates/template.pug.ts : `export const string = "..."`
 
-File Ext Example
+#### File Ext Example
 ```bash
 ack-pug-bundler pugs/ templates/ --outFileExt .ts --outType ts --oneToOne
 ```
@@ -110,10 +121,11 @@ Recommended to include the following in your package.json scripts for your conve
 
 ```javascript
 "scripts":{
-  "build:index": "ack-pug-bundler src/index.pug src/index.html --oneHtmlFile",
-  "build:pug": "ack-pug-bundler src/ src/",
-  "watch:pug": "ack-pug-bundler src/ src/ --watch --pretty",
-  "build:pug:for-nodejs": "ack-pug-bundler src/ src/ --outType common"
+  "build:index": "ack-pug-bundler src/index.pug www/index.html --oneHtmlFile",
+  "build:pug": "ack-pug-bundler src/pugs/ src/templates/",
+  "watch:pug": "ack-pug-bundler src/pugs/ src/templates/ --watch --pretty",
+  "build:pug:for-nodejs": "ack-pug-bundler src/pugs/ src/templates/ --outType common"
+  "build:htmls": "ack-pug-bundler src/htmls src/templates --oneToOne --includeHtmls --outType ts"
 }
 ```
 
