@@ -98,8 +98,8 @@ function activateOneFileMode(){
     const isHtml = from.search(/\.html$/)>=0
 
     try{
-      //var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
-      var html = pug.renderFile(from, options)
+      var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
+      //var html = pug.renderFile(from, options)
       //log('writing '+outTo)
       
       if(oneHtmlFile){
