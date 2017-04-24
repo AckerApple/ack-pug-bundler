@@ -24,7 +24,9 @@ if(options.includeHtmls){
 
 const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
 
-var oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
+const skipRender = process.argv.indexOf('--skipRender')>0
+const oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
+const oneFile = argv.indexOf('--oneFile')>0
 const oneToOne = argv.indexOf('--oneToOne')>0
 var fs = require('fs')
 
@@ -33,7 +35,7 @@ const isDir = stats.isDirectory()
 
 readArguments()
 
-if(oneToOne || oneHtmlFile){
+if(oneFile || oneToOne || oneHtmlFile){
   activateOneFileMode()
 }else{
   activateFolderMode()
@@ -95,7 +97,7 @@ function activateOneFileMode(){
 
   function buildFile(from){
     const outTo = fromToOutPath(from)
-    const isHtml = from.search(/\.html$/)>=0
+    const isHtml = skipRender || from.search(/\.html$/)>=0
 
     try{
       var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);

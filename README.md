@@ -80,7 +80,7 @@ ack-pug-bundler src/ src/templates.js
 - outFileExt
   - default = js
   - override output file extension
-  - not applicable when --oneHtmlFile
+  - not applicable when --oneHtmlFile or --oneFile
 - outType
   - determine flat html string OR import/export OR module.exports syntax
   - ecma6 || common || string || ts
@@ -89,6 +89,10 @@ ack-pug-bundler src/ src/templates.js
   - resulting html strings can maintain readability
 - oneToOne
   - when argument is present, in file names will be used to output file names
+- oneFile
+  - a convenience option to simply output one pug to one output file
+- skipRender
+  - indicates that file(s) being read are already compiled
 - oneHtmlFile
   - a convenience option to simply output one pug to one html file
 - includeHtmls
