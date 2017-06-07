@@ -98,6 +98,7 @@ function activateOneFileMode(){
   function buildFile(from){
     const outTo = fromToOutPath(from)
     const isHtml = skipRender || from.search(/\.html$/)>=0
+    const isMarkdown = skipRender || from.search(/\.md$/)>=0
 
     try{
       var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
@@ -106,6 +107,8 @@ function activateOneFileMode(){
       
       if(oneHtmlFile){
         fs.writeFileSync(outTo, html)
+      }else if(isMarkdown){
+        ackPug.markdownToFile(html, outTo, options)
       }else{
         ackPug.stringToFile(html, outTo, options)
       }
