@@ -91,6 +91,8 @@ ack-pug-bundler src/ src/templates.js
   - when argument is present, in file names will be used to output file names
 - oneFile
   - a convenience option to simply output one pug to one output file
+  - An .html file is converted to a string
+  - An .md file is converted to html and then to a string
 - skipRender
   - indicates that file(s) being read are already compiled
 - oneHtmlFile

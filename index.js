@@ -191,6 +191,7 @@ function pugRequestToMeta(f, outPath, searchOps){
 }
 
 module.exports.stringToFile = stringToFile
+module.exports.markdownToFile = markdownToFile
 
 //assumes file name
 function myStringToFile(string, path, options){
@@ -236,6 +237,11 @@ function stringToFile(string, path, options){
   .callback(function(callback){
     fs.writeFile(path, output, callback)
   })
+}
+
+const mdToHtml = require("marked")
+function markdownToFile(string, path, options){
+  return stringToFile(mdToHtml(string), path, options)
 }
 
 function writeFileByMeta(meta){
