@@ -32,6 +32,7 @@ var fs = require('fs')
 
 const stats = fs.statSync(folderPath)
 const isDir = stats.isDirectory()
+var parentFolder = isDir ? folderPath : path.join(folderPath,'../')
 
 readArguments()
 
@@ -126,7 +127,6 @@ function activateOneFileMode(){
 
   if(watch){
     var watcher = require('watch')
-    var parentFolder = isDir ? folderPath : path.join(folderPath,'../')
     var inFileName = folderPath.split(/(\\|\/)/g).pop()
     var watchOps = {
       filter: function(f){
