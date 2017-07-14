@@ -2,7 +2,6 @@
 
 var argv = process.argv.slice(2)
 
-var isAsOneFile = argv.length>1 && argv[1].substring(0, 1)!='-'
 
 var path = require('path')
 const ackPath = require('ack-path')
@@ -28,6 +27,7 @@ const skipRender = process.argv.indexOf('--skipRender')>0
 const oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
 const oneFile = argv.indexOf('--oneFile')>0
 const oneToOne = argv.indexOf('--oneToOne')>0
+const isAsOneFile = !oneToOne && argv.length>1 && argv[1].substring(0, 1)!='-'
 var fs = require('fs')
 
 const stats = fs.statSync(folderPath)
@@ -55,20 +55,26 @@ function readArguments(){
     log('output file ext is', options.outFileExt)
   }
 
-  if(isAsOneFile){
+  if( isAsOneFile ){
     options.outPath = path.join(startPath, argv[1])
     
     if(!isDir){
       options.outPath = path.join(options.outPath, '../')
     }
     
-    var outFileName = argv[1].split(/(\\|\/)/g).pop()
+    var outFileName = argv[1].split(path.sep).pop()
     options.asOneFile = outFileName
     options.outFilePath = path.join(options.outPath, options.asOneFile)
     if(outFileName)log('Mode is build as',outFileName)
+  }else if( oneToOne ){
+    options.outPath = path.join(startPath, argv[1])
+    const folderDef = argv[1].split(path.sep).pop()
+    options.outFilePath = options.outPath
+    log('File mode is oneToOne')
   }else{
     log('File mode is write inplace')
   }
+  
 }
 
 function activateFolderMode(){
@@ -127,7 +133,7 @@ function activateOneFileMode(){
 
   if(watch){
     var watcher = require('watch')
-    var inFileName = folderPath.split(/(\\|\/)/g).pop()
+    var inFileName = folderPath.split(path.sep).pop()
     var watchOps = {
       filter: function(f){
         const res = f.search(inFileName)>=0 && f.search(regx)>=0

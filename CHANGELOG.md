@@ -1,6 +1,10 @@
 # ack-pug-monitor - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.10] - 2017-07-14
+### Added
+- fixed oneToOne folder targeting
+
 ## [1.3.4] - 2017-04-03
 ### Added
 - option.includeHtmls to allow compile html to js/ts
