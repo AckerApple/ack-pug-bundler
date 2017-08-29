@@ -1,5 +1,8 @@
-# ack-pug-monitor - Change Log
+# ack-pug-bunlder - Change Log
 All notable changes to this project will be documented here.
+
+## [1.3.11] - 2017-08-29
+- fixed subfolder template building
 
 ## [1.3.10] - 2017-07-14
 ### Added

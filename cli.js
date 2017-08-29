@@ -98,8 +98,10 @@ function activateOneFileMode(){
   var pug = require('pug')
 
   function fromToOutPath(from){
-    const fileName = from.split(path.sep).pop()
-    return path.join(options.outFilePath, toFileName(fileName))
+    const split = from.split(path.sep)
+    const fileName = split.pop()
+    const diff = from.substring(folderPath.length, split.join(path.sep).length)
+    return path.join(options.outFilePath, diff, toFileName(fileName))
   }
 
   function buildFile(from){
