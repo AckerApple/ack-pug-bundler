@@ -98,7 +98,9 @@ ack-pug-bundler src/ src/templates.js
 - oneHtmlFile
   - a convenience option to simply output one pug to one html file
 - includeHtmls
-  - An option to not only bundle pug/jade files but also cast HTML to js/ts file(s)
+  - An option to bundle HTML files to js/ts file(s)
+- includeMarkdowns
+  - An option to bundle Markdown files to js/ts file(s)
 
 ### Command Examples
 Open a command prompt terminal and execute the following commands

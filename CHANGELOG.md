@@ -3,6 +3,8 @@ All notable changes to this project will be documented here.
 
 ## [1.3.11] - 2017-08-29
 - fixed subfolder template building
+- added includeMarkdowns
+- fixed outFileExt
 
 ## [1.3.10] - 2017-07-14
 ### Added

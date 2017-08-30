@@ -17,8 +17,14 @@ var options = {
 
 const fileExts = ['pug','jade']
 options.includeHtmls = argv.indexOf('--includeHtmls')>=0
+
 if(options.includeHtmls){
   fileExts.push('html')
+}
+
+options.includeMarkdowns = argv.indexOf('--includeMarkdowns')>=0
+if(options.includeMarkdowns){
+  fileExts.push('md')
 }
 
 const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
@@ -106,11 +112,11 @@ function activateOneFileMode(){
 
   function buildFile(from){
     const outTo = fromToOutPath(from)
-    const isHtml = skipRender || from.search(/\.html$/)>=0
-    const isMarkdown = skipRender || from.search(/\.md$/)>=0
+    const isMarkdown = from.search(/\.md$/)>=0
+    const isStringRead = skipRender || isMarkdown || from.search(/\.html$/)>=0
 
     try{
-      var html = isHtml ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
+      var html = isStringRead ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
       //var html = pug.renderFile(from, options)
       //log('writing '+outTo)
       
@@ -164,7 +170,7 @@ function activateOneFileMode(){
 }
 
 function getDefaultExt(){
-  return options.outType=='ts' ? '.ts' : '.js'
+  return options.outFileExt || (options.outType=='ts' ? '.ts' : '.js')
 }
 
 function filterResults(results){
@@ -177,6 +183,8 @@ function toFileName(name, ext){
   if(options.outFileExt || oneHtmlFile){
     name = name.replace(/(\.[^.]*)$/g, '')
   }
+
+  if(ext.substring(0, 1)!='.')ext='.'+ext
 
   return name + ext
 }
