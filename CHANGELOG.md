@@ -1,6 +1,9 @@
 # ack-pug-bunlder - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.13] - 2017-08-31
+- updated watch dependecy
+
 ## [1.3.11] - 2017-08-29
 - fixed subfolder template building
 - added includeMarkdowns
