@@ -1,6 +1,9 @@
 # ack-pug-bunlder - Change Log
 All notable changes to this project will be documented here.
 
+## [1.3.14] - 2017-12-14
+- During oneHtmlFile or oneFileeducated, an educated guess is made when output is file instead of folder
+
 ## [1.3.13] - 2017-08-31
 - updated watch dependecy
 

@@ -111,6 +111,11 @@ function activateOneFileMode(){
     const split = from.split(path.sep)
     const fileName = split.pop()
     const diff = split.join(path.sep).substring(folderPath.length, split.join(path.sep).length)
+
+    if( (oneHtmlFile || oneFile) && ackPath(options.outFilePath).isLikeFile() ){
+      return options.outFilePath
+    }
+
     return path.join(options.outFilePath, diff, toFileName(fileName))
   }
 
@@ -124,7 +129,7 @@ function activateOneFileMode(){
       //var html = pug.renderFile(from, options)
       //log('writing '+outTo)
       
-      if(oneHtmlFile){
+      if( oneHtmlFile ){
         fs.writeFileSync(outTo, html)
       }else if(isMarkdown){
         ackPug.markdownToFile(html, outTo, options)
