@@ -178,6 +178,10 @@ function pugPathToMeta(path, basePath, options){
 
   meta.keyPath = ackPath(meta.key).removeFileName().path
 
+  if( options.outFileExt ){
+    meta.filePath += "." + options.outFileExt
+  }
+
   return meta
 }
 
@@ -253,7 +257,11 @@ function writeFileByMeta(meta){
 
   AOutPath.join( ackPath(meta.filePath).getName() )//replication of folder depth
 
-  return myStringToFile(meta.string, AOutPath.path, meta.searchOps)
+  return myStringToFile(
+    meta.string,
+    AOutPath.path,
+    meta.searchOps
+  )
 }
 
 
@@ -270,7 +278,9 @@ function writeRepeater(f, outPath, searchOps){
 
 function outRepeater(outPath, searchOps, resultArray){
   return function(f){
-    resultArray.push( pugRequestToMeta(f.path, outPath, searchOps) )
+    resultArray.push(
+      pugRequestToMeta(f.path, outPath, searchOps)
+    )
     //return writeRepeater(f, outPath, searchOps)
   }
 }
@@ -334,7 +344,6 @@ function writeMetaOb(bodyOb, outPath, searchOps){
 
     body = header + body
   }
- 
 
   var Path = ackPath(outPath)
 
@@ -354,8 +363,14 @@ function getMetaArrayByPathing(path, outPath, searchOps){
   const fPath = ackPath(path)
   searchOps = paramPathSearchOps(path, searchOps)
   var resultArray = []
-  return fPath.recurFilePath( outRepeater(outPath,searchOps,resultArray), searchOps )
-  .then(()=>resultArray)
+  return fPath.recurFilePath(
+    outRepeater(
+      outPath,
+      searchOps,
+      resultArray
+    ),
+    searchOps
+  ).then(()=>resultArray)
 }
 
 /**
@@ -380,6 +395,7 @@ function crawlPath(path, outPath, searchOps){
     if(searchOps && (searchOps.asOneFile || searchOps.asJsonFile)){
       promises.push( metaArrayToOneFile(resultArray,outPath,searchOps) )
     }else{
+
       for(let x=resultArray.length-1; x >= 0; --x){
         var meta = resultArray[x]
         promises.push( writeFileByMeta(meta) )

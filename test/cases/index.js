@@ -62,19 +62,23 @@ describe('ack-pug-monitor',()=>{
       var PugTwo = ackPath(outPath).file().join('pug-two.pug.js')
       var SubPug = ackPath(outPath).file().join('sub-folder','sub-folder-test.pug.js')
 
-      index.crawlPath(folderPath, outPath, {outType:'common'})
+      index.crawlPath(folderPath, outPath, {
+        outType:'common',
+        outFileExt:'js',
+        outType:'js'
+      })
       .delay(10)
       .then(()=>PugOne.exists())
       .then(yesNo=>{
-        assert.equal(yesNo, true)
+        assert.equal(yesNo, true, PugOne.path)
       })
       .then(()=>PugTwo.exists())
       .then(yesNo=>{
-        assert.equal(yesNo, true)
+        assert.equal(yesNo, true,'pug-two.pug.js')
       })
       .then(()=>SubPug.exists())
       .then(yesNo=>{
-        assert.equal(yesNo, true)
+        assert.equal(yesNo, true, 'sub-folder-test.pug.js')
       })
       .then(done).catch(done)
     })

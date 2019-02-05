@@ -116,7 +116,11 @@ function activateOneFileMode(){
       return options.outFilePath
     }
 
-    return path.join(options.outFilePath, diff, toFileName(fileName))
+    return path.join(
+      options.outFilePath,
+      diff,
+      toFileName(fileName)
+    )
   }
 
   function buildFile(from){
