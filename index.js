@@ -238,8 +238,15 @@ function stringToFile(string, path, options){
   }
 
   return ackPath(path).removeFileName().paramDir()
-  .callback(function(callback){
-    fs.writeFile(path, output, callback)
+  .then((callback)=>{
+    new Promise((res,rej)=>{
+      fs.writeFile(path, output, (err,value)=>{
+        if( err ){
+          return rej( err )
+        }
+        res( value )
+      })
+    })
   })
 }
 
@@ -402,8 +409,7 @@ function crawlPath(path, outPath, searchOps){
       }
     }
 
-    return promises
+    return Promise.all( promises )
   })
-  .all()
   .catch( console.log.bind(console) )
 }

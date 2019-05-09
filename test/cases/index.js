@@ -13,7 +13,7 @@ describe('ack-pug-monitor',()=>{
       var tPath = ackPath(outPath).join('templates.json')
       
       index.crawlPath(folderPath, outPath, {asJsonFile:true})
-      .delay(10)
+      .then( delay10 )
       .then(()=>tPath.exists())
       .then(yesNo=>{
         assert.equal(yesNo, true)
@@ -34,7 +34,7 @@ describe('ack-pug-monitor',()=>{
       var tPath = ackPath(outPath).join('templates.js')
       
       index.crawlPath(folderPath, outPath, {outType:'common', asOneFile:true})
-      .delay(10)
+      .then( delay10 )
       .then(()=>tPath.exists())
       .then(yesNo=>{
         assert.equal(yesNo, true)
@@ -49,9 +49,7 @@ describe('ack-pug-monitor',()=>{
 
         contents.get('nothing')//causes 404
       })
-      .catch(404,e=>{
-        assert.equal(e.code, 404)
-      })
+      .catch( e=>assert.equal(e.code, 404) )
       .then(done).catch(done)
     })
 
@@ -67,7 +65,7 @@ describe('ack-pug-monitor',()=>{
         outFileExt:'js',
         outType:'js'
       })
-      .delay(10)
+      .then( delay10 )
       .then(()=>PugOne.exists())
       .then(yesNo=>{
         assert.equal(yesNo, true, PugOne.path)
@@ -84,3 +82,9 @@ describe('ack-pug-monitor',()=>{
     })
   })
 })
+
+function delay10(){
+  return new Promise((res,rej)=>
+    setTimeout(()=>res(), 10)
+  )
+}
