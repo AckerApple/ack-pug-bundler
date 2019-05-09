@@ -108,53 +108,8 @@ function activateFolderMode(){
 function activateOneFileMode(){
   options.outFilePath = options.outFilePath || toFileName(folderPath)
 
-  function fromToOutPath(from){
-    const split = from.split(path.sep)
-    const fileName = split.pop()
-    const diff = split.join(path.sep).substring(folderPath.length, split.join(path.sep).length)
-
-    if( (oneHtmlFile || oneFile) && ackPath(options.outFilePath).isLikeFile() ){
-      return options.outFilePath
-    }
-
-    return path.join(
-      options.outFilePath,
-      diff,
-      toFileName(fileName)
-    )
-  }
-
-  function buildFile(from){
-    const outTo = fromToOutPath(from)
-    const isMarkdown = from.search(/\.md$/)>=0
-    const isStringRead = skipRender || isMarkdown || from.search(/\.html$/)>=0
-
-    try{
-      var html = isStringRead ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
-      //var html = pug.renderFile(from, options)
-      //log('writing '+outTo)
-      
-      if( oneHtmlFile ){
-        fs.writeFileSync(outTo, html)
-      }else if(isMarkdown){
-        ackPug.markdownToFile(html, outTo, options)
-      }else{
-        ackPug.stringToFile(html, outTo, options)
-      }
-    }catch(e){
-      log.error(e)
-    }
-  }
-
-  function onFileChange(from){
-    log(getServerTime(), from.substring(parentFolder.length, from.length))
-    const outTo = path.join(options.outPath, fromToOutPath(from).split(path.sep).pop())
-    log(getServerTime(), 'built', outTo.substring(startPath.length, outTo.length))
-    buildFile(from)
-  }
-
   if(watch){
-    createWatch()
+    createWatch( options )
   }else{
     const aPath = ackPath(folderPath)
 
@@ -171,7 +126,7 @@ function activateOneFileMode(){
       log('Building',folderPath)
       
       return Promise.all(
-        res.map( filePath=>buildFile(filePath) )
+        res.map( filePath=>buildFile(filePath, options) )
       )
     })
     .then( ()=>log('Compiled',options.outFilePath) )
@@ -204,7 +159,14 @@ function getServerTime(d){
   var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+('0'+d.getSeconds()).slice(-2)+' '+t
 }
 
-function createWatch(){
+function onFileChange(from, options){
+  log(getServerTime(), from.substring(parentFolder.length, from.length))
+  const outTo = path.join(options.outPath, fromToOutPath(from,options).split(path.sep).pop())
+  log(getServerTime(), 'built', outTo.substring(startPath.length, outTo.length))
+  buildFile(from, options)
+}
+
+function createWatch( options ){
   var watcher = require('watch')
   var inFileName = folderPath.split(path.sep).pop()
   var watchOps = {
@@ -215,10 +177,48 @@ function createWatch(){
   }
   
   watcher.createMonitor(parentFolder, watchOps, monitor=>{
-    monitor.on("created", onFileChange)
-    monitor.on("changed", onFileChange)
-    monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
+    monitor.on("created", target=>onFileChange(target, options))
+    monitor.on("changed", target=>onFileChange(target, options))
+    monitor.on("removed", from=>fs.unlink(fromToOutPath(from,options),e=>e))
     process.once('SIGINT', ()=>monitor.stop())
   })
   log('Watching', parentFolder.substring(startPath.length, parentFolder.length))
+}
+
+function fromToOutPath(from, options){
+  const split = from.split(path.sep)
+  const fileName = split.pop()
+  const diff = split.join(path.sep).substring(folderPath.length, split.join(path.sep).length)
+
+  if( (oneHtmlFile || oneFile) && ackPath(options.outFilePath).isLikeFile() ){
+    return options.outFilePath
+  }
+
+  return path.join(
+    options.outFilePath,
+    diff,
+    toFileName(fileName)
+  )
+}
+
+function buildFile(from, options){
+  const outTo = fromToOutPath(from, options)
+  const isMarkdown = from.search(/\.md$/)>=0
+  const isStringRead = skipRender || isMarkdown || from.search(/\.html$/)>=0
+
+  try{
+    var html = isStringRead ? fs.readFileSync(from).toString() : pug.renderFile(from, options);
+    //var html = pug.renderFile(from, options)
+    //log('writing '+outTo)
+    
+    if( oneHtmlFile ){
+      fs.writeFileSync(outTo, html)
+    }else if(isMarkdown){
+      ackPug.markdownToFile(html, outTo, options)
+    }else{
+      ackPug.stringToFile(html, outTo, options)
+    }
+  }catch(e){
+    log.error(e)
+  }
 }
