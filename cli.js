@@ -27,7 +27,9 @@ if(options.includeMarkdowns){
   fileExts.push('md')
 }
 
-const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
+const regx = new RegExp('\.('+fileExts.join('|')+')$', 'gi')
+//deprecated 5/9/19 : turned no extension files into pugs
+//const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
 
 const skipRender = process.argv.indexOf('--skipRender')>0
 const oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
