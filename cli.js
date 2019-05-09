@@ -4,6 +4,7 @@ var argv = process.argv.slice(2)
 
 
 var path = require('path')
+var pug = require('pug')
 const ackPath = require('ack-path')
 var startPath = process.cwd()
 var folderPath = path.join(startPath, argv[0])
@@ -28,8 +29,8 @@ if(options.includeMarkdowns){
 }
 
 const regx = new RegExp('\.('+fileExts.join('|')+')$', 'gi')
-//deprecated 5/9/19 : turned no extension files into pugs
-//const regx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
+//watch folders and specific file extensions
+const watchRegx = new RegExp('(\.('+fileExts.join('|')+')$|[\\/][^\\/.]+$)', 'gi')
 
 const skipRender = process.argv.indexOf('--skipRender')>0
 const oneHtmlFile = argv.indexOf('--oneHtmlFile')>0
@@ -107,8 +108,6 @@ function activateFolderMode(){
 function activateOneFileMode(){
   options.outFilePath = options.outFilePath || toFileName(folderPath)
 
-  var pug = require('pug')
-
   function fromToOutPath(from){
     const split = from.split(path.sep)
     const fileName = split.pop()
@@ -155,22 +154,7 @@ function activateOneFileMode(){
   }
 
   if(watch){
-    var watcher = require('watch')
-    var inFileName = folderPath.split(path.sep).pop()
-    var watchOps = {
-      filter: function(f){
-        const res = f.search(inFileName)>=0 && f.search(regx)>=0
-        return res ? true : false
-      }
-    }
-    
-    watcher.createMonitor(parentFolder, watchOps, monitor=>{
-      monitor.on("created", onFileChange)
-      monitor.on("changed", onFileChange)
-      monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
-      process.once('SIGINT', ()=>monitor.stop())
-    })
-    log('Watching', parentFolder.substring(startPath.length, parentFolder.length))
+    createWatch()
   }else{
     const aPath = ackPath(folderPath)
 
@@ -218,4 +202,23 @@ function toFileName(name, ext){
 function getServerTime(d){
   d = d || new Date()
   var h=d.getHours(),t='AM',m=d.getMinutes();m=m<10?'0'+m:m;h=h>=12?(t='PM',h-12||12):h==0?12:h;return ('0'+h).slice(-2)+':'+m+':'+('0'+d.getSeconds()).slice(-2)+' '+t
+}
+
+function createWatch(){
+  var watcher = require('watch')
+  var inFileName = folderPath.split(path.sep).pop()
+  var watchOps = {
+    filter: function(f){
+      const res = f.search(inFileName)>=0 && f.search(watchRegx)>=0
+      return res ? true : false
+    }
+  }
+  
+  watcher.createMonitor(parentFolder, watchOps, monitor=>{
+    monitor.on("created", onFileChange)
+    monitor.on("changed", onFileChange)
+    monitor.on("removed", from=>fs.unlink(fromToOutPath(from),e=>e))
+    process.once('SIGINT', ()=>monitor.stop())
+  })
+  log('Watching', parentFolder.substring(startPath.length, parentFolder.length))
 }
