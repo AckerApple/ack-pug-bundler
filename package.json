@@ -1,6 +1,6 @@
 {
   "name": "ack-pug-bundler",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Watch and bundle pug/jade files into .js files for importing into Javascript",
   "main": "index.js",
   "directories": {

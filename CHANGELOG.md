@@ -1,8 +1,9 @@
 # ack-pug-bunlder - Change Log
 All notable changes to this project will be documented here.
 
-## [1.4.0] - 2019-02-05
+## [1.4.3] - 2019-02-05
 - security fixes
+- upgraded ack-path from 1.5 to 1.6
 
 ## [1.3.14] - 2017-12-14
 - During oneHtmlFile or oneFileeducated, an educated guess is made when output is file instead of folder

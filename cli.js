@@ -173,10 +173,21 @@ function activateOneFileMode(){
     const aPath = ackPath(folderPath)
 
     aPath.isFile()
-    .if(true, ()=>[folderPath])
-    .if(false, ()=>aPath.recurFiles(File=>File.path).then(filterResults))
-    .past( ()=>log('Building',folderPath) )
-    .map( filePath=>buildFile(filePath) )
+    .then(res=>{
+      if( res ){
+        return [folderPath]
+      }
+
+      return aPath.recurFiles(File=>File.path)
+      .then(filterResults)
+    })
+    .then(res=>{
+      log('Building',folderPath)
+      
+      return Promise.all(
+        res.map( filePath=>buildFile(filePath) )
+      )
+    })
     .then( ()=>log('Compiled',options.outFilePath) )
     .catch(e=>console.error(e))
   }
