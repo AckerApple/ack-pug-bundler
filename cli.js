@@ -5,7 +5,7 @@ var argv = process.argv.slice(2)
 
 var path = require('path')
 var pug = require('pug')
-const ackPath = require('ack-path')
+const ackPath = require('ack-path').method
 var startPath = process.cwd()
 var folderPath = path.join(startPath, argv[0])
 var watch = argv.indexOf('--watch')>0

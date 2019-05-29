@@ -1,7 +1,7 @@
 "use strict";
 
 var assert = require('assert')
-var ackPath = require('ack-path')
+var ackPath = require('ack-path').method
 var path = require('path')
 var index = require('../../index')
 

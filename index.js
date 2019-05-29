@@ -1,6 +1,6 @@
 "use strict";
 
-const ackPath = require('ack-path')
+const ackPath = require('ack-path').method
 
 var jade = require('pug')
 var fs = require('fs')
