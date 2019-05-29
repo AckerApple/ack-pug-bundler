@@ -1,7 +1,7 @@
 # ack-pug-bunlder - Change Log
 All notable changes to this project will be documented here.
 
-## [1.4.6] - 2019-05-09
+## [1.4.7] - 2019-05-09
 - upgraded ack-path from 1.5 to 1.6
 - Prevented cli from converting extensionless files
 - Fixed recursive watching
