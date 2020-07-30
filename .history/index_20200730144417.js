@@ -16,14 +16,14 @@ module.exports.monitorFileDelete = monitorFileDelete
 
 //watch function filter to only watch pug||jade files
 var watchOptions = {
-  filter: function (f) {
-    const res = f.search(/(\.(pug|jade)$|[\\/][^\\/.]+$)/) >= 0
+  filter: function(f){
+    const res = f.search(/(\.(pug|jade)$|[\\/][^\\/.]+$)/)>=0
     return res ? true : false
   }
 }
 
-function watchPath(folderPath, outPath, searchOps) {
-  if (outPath && typeof outPath != 'string') {
+function watchPath(folderPath, outPath, searchOps){
+  if(outPath && typeof outPath!='string'){
     searchOps = outPath
     outPath = path
   }
@@ -31,7 +31,7 @@ function watchPath(folderPath, outPath, searchOps) {
 
   searchOps = paramPathSearchOps(folderPath, searchOps)
   var loader = monitorLoader(folderPath, outPath, searchOps)
-  watch.createMonitor((folderPath || '.'), watchOptions, loader)
+  watch.createMonitor((folderPath||'.'), watchOptions, loader)
 }
 
 /**
@@ -43,8 +43,8 @@ function watchPath(folderPath, outPath, searchOps) {
     outType:'ecma6'||'common'//controls output js file for export versus module.exports
   }
 */
-function writeFile(f, outPath, searchOps) {
-  if (outPath && typeof outPath != 'string') {
+function writeFile(f, outPath, searchOps){
+  if(outPath && typeof outPath!='string'){
     searchOps = outPath
     outPath = path
   }
@@ -54,100 +54,100 @@ function writeFile(f, outPath, searchOps) {
   return writeFileByMeta(meta)
 }
 
-function monitorLoader(folderPath, outPath, searchOps) {
-  if (searchOps.asOneFile || searchOps.asJsonFile) {
-    return function (monitor) {
+function monitorLoader(folderPath, outPath, searchOps){
+  if(searchOps.asOneFile || searchOps.asJsonFile){
+    return function(monitor){
       createOneFileMonitor(monitor, folderPath, outPath, searchOps)
     }
   }
 
-  return function (monitor) {
+  return function(monitor){
     createMonitor(monitor, outPath, searchOps)
   }
 }
 
 function monitorFileChange(f, outPath, searchOps) {
-  if (isPugFile(f)) {
+  if(isPugFile(f)){    
     outPath = outPath || ackPath(f).removeFileName().path
 
-    return writeFile(f, outPath, searchOps).then(function () {
-      console.log('\x1b[36m[ack-pug-bundler]: wrote: \x1b[0m' + f)
+    return writeFile(f, outPath, searchOps).then(function(){
+      console.log('\x1b[36m[ack-pug-bundler]: wrote: \x1b[0m'+f)
     })
   }
 }
 
 function monitorFileDelete(filePath, outPath) {
-  var jadeF = filePath + '.js'
+  var jadeF = filePath+'.js'
 
   var name = ackPath(filePath).getName()
   outPath = outPath ? ackPath(outPath).join(name).path : f
 
-  if (isPugFile(jadeF)) {
+  if(isPugFile(jadeF)){
     fs.unlink(outPath)
-    console.log('\x1b[31m[ack-pug-bundler]\x1b[0m: deleted: ' + filePath)
+    console.log('\x1b[31m[ack-pug-bundler]\x1b[0m: deleted: '+filePath)
   }
 }
 
-function createOneFileMonitor(monitor, folderPath, outPath, searchOps) {
+function createOneFileMonitor(monitor, folderPath, outPath, searchOps){
   var metaOb = {}
 
   return getMetaArrayByPathing(folderPath, outPath, searchOps)
-    .then(function (ma) {
-      metaOb = metaArrayToOb(ma)
-
-      var save = function () {
-        writeMetaOb(metaOb, outPath, searchOps)
-          .then(function (res) {
-            console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m wrote single file')
-          })
-          .catch(console.log.bind(console))
-      }
-
-      var onChange = function (f) {
-        try {
-          var meta = pugRequestToMeta(f, outPath, searchOps)
-          var key = '.' + ackPath(meta.key).removeExt().path
-          metaOb[key] = meta.string
-          save()
-        } catch (e) {
-          console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m \x1b[31m Failed to render:\x1b[0m ' + f)
-          console.error(e)
-        }
-      }
-
-      monitor.on("created", onChange)
-
-      monitor.on("changed", onChange)
-
-      monitor.on("removed", function (f) {
-        try {
-          var meta = pugRequestToMeta(f, outPath, searchOps)
-          var key = '.' + ackPath(meta.key).removeExt().path
-          delete metaOb[key]
-          save()
-        } catch (e) {
-          console.error(e)
-        }
+  .then(function(ma){
+    metaOb = metaArrayToOb(ma)
+  
+    var save = function(){
+      writeMetaOb(metaOb, outPath, searchOps)
+      .then(function(res){
+        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m wrote single file')
       })
-    })
-    .catch(console.log.bind(console))
+      .catch( console.log.bind(console) )
+    }
 
+    var onChange = function(f){
+      try{
+        var meta = pugRequestToMeta(f, outPath, searchOps)
+        var key = '.'+ackPath(meta.key).removeExt().path
+        metaOb[ key ] = meta.string
+        save()
+      }catch(e){
+        console.log('\x1b[36m[ack-pug-bundler]:\x1b[0m \x1b[31m Failed to render:\x1b[0m '+f)
+        console.error(e)
+      }
+    }
+
+    monitor.on("created", onChange)
+    
+    monitor.on("changed", onChange)
+    
+    monitor.on("removed", function(f){
+      try{
+        var meta = pugRequestToMeta(f, outPath, searchOps)
+        var key = '.'+ackPath(meta.key).removeExt().path
+        delete metaOb[ key ]
+        save()
+      }catch(e){
+        console.error(e)
+      }
+    })
+  })
+  .catch( console.log.bind(console) )
+  
   /*
   process.on('exit',()=>{
     monitor.stop();// Stop watching
-  })*/
+  })*/  
 }
 
 function createMonitor(monitor, outPath, searchOps) {
-  monitor.on("created", function (f) {
+  monitor.on("created", function(f){
     monitorFileChange(f, outPath, searchOps)
   })
-
-  monitor.on("changed", function (f) {
+  
+  monitor.on("changed", function(f){
     monitorFileChange(f, outPath, searchOps)
   })
-
-  monitor.on("removed", function (f) {
+  
+  monitor.on("removed", function(f){
     monitorFileDelete(f, outPath)
   })
   /*
@@ -156,21 +156,21 @@ function createMonitor(monitor, outPath, searchOps) {
   })*/
 }
 
-function escapePugString(html) {
+function escapePugString(html){
   html = html.replace(/"/g, '\\\"')//escape(html)
   html = html.replace(/(\n)/g, '"+$1"\\n')//escape linefeeds
   html = html.replace(/(\r)/g, '"+$1"\\r')//escape linereturns
   return html
 }
 
-function reduceBasePath(path, basePath) {
-  var rx = new RegExp('^' + basePath, 'i')
-  return ackPath(path).path.replace(rx, '')
+function reduceBasePath(path, basePath){
+  var rx = new RegExp('^'+basePath, 'i')
+  return ackPath(path).path.replace(rx,'')
 }
 
-function pugPathToMeta(path, basePath, options) {
+function pugPathToMeta(path, basePath, options){
   var meta = {
-    string: jade.renderFile(path, options),
+    string: jade.renderFile(path,options),
     path: ackPath(path).removeFileName().path,
     filePath: path,
     key: basePath ? reduceBasePath(path, basePath) : path
@@ -178,14 +178,14 @@ function pugPathToMeta(path, basePath, options) {
 
   meta.keyPath = ackPath(meta.key).removeFileName().path
 
-  if (options.outFileExt) {
+  if( options.outFileExt ){
     meta.filePath += "." + options.outFileExt
   }
 
   return meta
 }
 
-function pugRequestToMeta(f, outPath, searchOps) {
+function pugRequestToMeta(f, outPath, searchOps){
   var meta = pugPathToMeta(f, searchOps.basePath, searchOps)
 
   meta.outPath = outPath || f
@@ -198,14 +198,14 @@ module.exports.stringToFile = stringToFile
 module.exports.markdownToFile = markdownToFile
 
 //assumes file name
-function myStringToFile(string, path, options) {
+function myStringToFile(string, path, options){
   var AOutPath = ackPath(path)
-  if (options.outFileExt) {
+  if(options.outFileExt){
     var dotArray = ackPath(path).getName().split('.')
     dotArray.pop()//remove last dot notation aka file extension
-    var fileName = dotArray.join('.') + '.' + options.outFileExt
-  } else {
-    var fileName = ackPath(path).getName() + '.js'
+    var fileName = dotArray.join('.')+'.'+options.outFileExt
+  }else{
+    var fileName = ackPath(path).getName()+'.js'
   }
   var outFilePath = AOutPath.removeFileName().join(fileName).path//append file name
 
@@ -213,13 +213,12 @@ function myStringToFile(string, path, options) {
 }
 
 //does not make out file assumptions
-function stringToFile(string, path, options) {
+function stringToFile(string, path, options){
   options = options || {}
-
+  
   let output = ''
-  switch (options.outType) {
-    case 'string':
-    case 'html': break;
+  switch(options.outType){
+    case 'string':break;
 
     case 'common':
       output = 'module.exports='
@@ -229,41 +228,41 @@ function stringToFile(string, path, options) {
       output = 'export const string = '
       break;
 
-    default: output = 'export default '
+    default:output = 'export default '
   }
 
-  if (options.outType == 'string') {
+  if(options.outType=='string'){
     output += string
-  } else {
+  }else{
     output += '"' + escapePugString(string) + '"'
   }
 
   return ackPath(path).removeFileName().paramDir()
-    .then((callback) => {
-      new Promise((res, rej) => {
-        fs.writeFile(path, output, (err, value) => {
-          if (err) {
-            return rej(err)
-          }
-          res(value)
-        })
+  .then((callback)=>{
+    new Promise((res,rej)=>{
+      fs.writeFile(path, output, (err,value)=>{
+        if( err ){
+          return rej( err )
+        }
+        res( value )
       })
     })
+  })
 }
 
 const mdToHtml = require("marked")
-function markdownToFile(string, path, options) {
+function markdownToFile(string, path, options){
   return stringToFile(mdToHtml(string), path, options)
 }
 
-function writeFileByMeta(meta) {
+function writeFileByMeta(meta){
   var AOutPath = ackPath(meta.outPath)
 
-  if (meta.keyPath != meta.key) {
-    AOutPath.join(meta.keyPath)//replication of folder depth
+  if(meta.keyPath!=meta.key){
+    AOutPath.join( meta.keyPath )//replication of folder depth
   }
 
-  AOutPath.join(ackPath(meta.filePath).getName())//replication of folder depth
+  AOutPath.join( ackPath(meta.filePath).getName() )//replication of folder depth
 
   return myStringToFile(
     meta.string,
@@ -274,8 +273,8 @@ function writeFileByMeta(meta) {
 
 
 
-function writeRepeater(f, outPath, searchOps) {
-  if (f.path.search(/\.(pug|jade)\.js$/) >= 0) {
+function writeRepeater(f, outPath, searchOps){
+  if(f.path.search(/\.(pug|jade)\.js$/)>=0){
     deleteRepeater(f)
     return
   }
@@ -284,8 +283,8 @@ function writeRepeater(f, outPath, searchOps) {
   return writeFileByMeta(meta)
 }
 
-function outRepeater(outPath, searchOps, resultArray) {
-  return function (f) {
+function outRepeater(outPath, searchOps, resultArray){
+  return function(f){
     resultArray.push(
       pugRequestToMeta(f.path, outPath, searchOps)
     )
@@ -293,20 +292,20 @@ function outRepeater(outPath, searchOps, resultArray) {
   }
 }
 
-function deleteRepeater(f) {
+function deleteRepeater(f){
   const F = ackPath(f.path).file()
-  return F.Join().removeExt().exists().if(false, () => F.delete())
+  return F.Join().removeExt().exists().if(false,()=>F.delete())
 }
 
 /**
   @searchOps{includeHtmls:false}
 */
-function paramPathSearchOps(path, searchOps) {
+function paramPathSearchOps(path, searchOps){
   searchOps = searchOps || {}
-  if (!searchOps.filter) {
-    searchOps.filter = ['**/**.pug', '**/**.jade', '**.pug', '**.jade']//['**/**.pug','**/**.jade']
-
-    if (searchOps.includeHtmls) {
+  if(!searchOps.filter){
+    searchOps.filter = ['**/**.pug','**/**.jade','**.pug','**.jade']//['**/**.pug','**/**.jade']
+    
+    if(searchOps.includeHtmls){
       searchOps.filter.push('**/**.html')
       searchOps.filter.push('**.html')
     }
@@ -316,11 +315,11 @@ function paramPathSearchOps(path, searchOps) {
   return searchOps
 }
 
-function metaArrayToOb(metaArray) {
-  var bodyOb = { timestamp: Date.now() }
-  for (let x = metaArray.length - 1; x >= 0; --x) {
+function metaArrayToOb(metaArray){
+  var bodyOb = {timestamp:Date.now()}
+  for(let x=metaArray.length-1; x >= 0; --x){
     var meta = metaArray[x]
-    var key = '.' + ackPath(meta.key).removeExt().path
+    var key = '.'+ackPath(meta.key).removeExt().path
     bodyOb[key] = meta.string
   }
 
@@ -328,26 +327,26 @@ function metaArrayToOb(metaArray) {
 }
 
 //method used to write a single file
-function writeMetaOb(bodyOb, outPath, searchOps) {
+function writeMetaOb(bodyOb, outPath, searchOps){
   var body = JSON.stringify(bodyOb, null, 2)
-
-  if (searchOps.asJsonFile) {
+  
+  if(searchOps.asJsonFile){
     //true to default file name
-    searchOps.asJsonFile = typeof searchOps.asJsonFile != 'string' ? 'templates.json' : searchOps.asJsonFile
+    searchOps.asJsonFile = typeof searchOps.asJsonFile!='string' ? 'templates.json' : searchOps.asJsonFile
     var fileName = searchOps.asJsonFile
-  } else if (searchOps.asOneFile) {
+  }else if(searchOps.asOneFile){
     //true to default file name
-    searchOps.asOneFile = typeof searchOps.asOneFile != 'string' ? 'templates.js' : searchOps.asOneFile
+    searchOps.asOneFile = typeof searchOps.asOneFile!='string' ? 'templates.js' : searchOps.asOneFile
     var fileName = searchOps.asOneFile
 
-    if (searchOps.outType == 'common') {
+    if(searchOps.outType=='common'){
       var header = 'module.exports='
-    } else {
+    }else{
       var header = 'export default '
     }
 
     //add get function that throw errors on templates
-    body = body.substring(0, body.length - 2) + ',\n'
+    body = body.substring(0, body.length-2)+',\n'
     body = body + "  get:function(p){if(this[p]){return this[p]}var ne=new Error('Template not found: '+p+'. Available-Templates: '+Object.keys(this).join());ne.code=404;throw ne}\n}"
 
     body = header + body
@@ -356,17 +355,17 @@ function writeMetaOb(bodyOb, outPath, searchOps) {
   var Path = ackPath(outPath)
 
   return Path.paramDir()
-    .then(function () {
-      return Path.join(fileName).writeFile(body)
-    })
+  .then(function(){
+    return Path.join(fileName).writeFile(body)
+  })
 }
 
-function metaArrayToOneFile(metaArray, outPath, searchOps) {
+function metaArrayToOneFile(metaArray, outPath, searchOps){
   var bodyOb = metaArrayToOb(metaArray)
   return writeMetaOb(bodyOb, outPath, searchOps)
 }
 
-function getMetaArrayByPathing(path, outPath, searchOps) {
+function getMetaArrayByPathing(path, outPath, searchOps){
   outPath = outPath || path
   const fPath = ackPath(path)
   searchOps = paramPathSearchOps(path, searchOps)
@@ -378,7 +377,7 @@ function getMetaArrayByPathing(path, outPath, searchOps) {
       resultArray
     ),
     searchOps
-  ).then(() => resultArray)
+  ).then(()=>resultArray)
 }
 
 /**
@@ -390,27 +389,27 @@ function getMetaArrayByPathing(path, outPath, searchOps) {
     ]
   }
 */
-function crawlPath(path, outPath, searchOps) {
-  if (outPath && typeof outPath != 'string') {
+function crawlPath(path, outPath, searchOps){
+  if(outPath && typeof outPath!='string'){
     searchOps = outPath
     outPath = path
   }
 
   return getMetaArrayByPathing(path, outPath, searchOps)
-    .then(function (resultArray) {
-      var promises = []
+  .then(function(resultArray){
+    var promises = []
 
-      if (searchOps && (searchOps.asOneFile || searchOps.asJsonFile)) {
-        promises.push(metaArrayToOneFile(resultArray, outPath, searchOps))
-      } else {
+    if(searchOps && (searchOps.asOneFile || searchOps.asJsonFile)){
+      promises.push( metaArrayToOneFile(resultArray,outPath,searchOps) )
+    }else{
 
-        for (let x = resultArray.length - 1; x >= 0; --x) {
-          var meta = resultArray[x]
-          promises.push(writeFileByMeta(meta))
-        }
+      for(let x=resultArray.length-1; x >= 0; --x){
+        var meta = resultArray[x]
+        promises.push( writeFileByMeta(meta) )
       }
+    }
 
-      return Promise.all(promises)
-    })
-    .catch(console.log.bind(console))
+    return Promise.all( promises )
+  })
+  .catch( console.log.bind(console) )
 }
