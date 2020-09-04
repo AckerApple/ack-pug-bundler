@@ -13,7 +13,7 @@
     "ack-path": "^1.7.2",
     "pug": "^2.0.3",
     "watch": "^1.0.2",
-    "marked": "^0.6.2"
+    "marked": "^0.7.0"
   },
   "devDependencies": {
     "mocha": "^6.1.4"
