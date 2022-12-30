@@ -16,7 +16,7 @@
     "marked": "^0.6.2"
   },
   "devDependencies": {
-    "mocha": "^6.1.4"
+    "mocha": "^10.2.0"
   },
   "scripts": {
     "test": "mocha test/cases/ --recursive",
